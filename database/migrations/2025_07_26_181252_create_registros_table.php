@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->string('descripcion');
             $table->integer('valor');
+            $table->string('abono');
             $table->foreignId('id_estado')->constrained('estados');
             $table->timestamps();
         });

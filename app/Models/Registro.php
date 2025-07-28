@@ -20,10 +20,11 @@ class Registro extends Model
         'nombre',
         'descripcion',
         'valor',
+        'abono',
         'id_estado',
     ];
 
     public function estado() {
-        return $this->belongsTo(Estado::class, 'id_estado');
+        return $this->belongsTo(Estado::class, 'id_estado', 'id');
     }
 }
