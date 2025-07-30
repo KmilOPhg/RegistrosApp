@@ -15,7 +15,7 @@
         <td> {{ $registro->descripcion }}</td>
         <td> {{ $registro->valor }}</td>
         <td> {{ $registro->estado->estado }}</td>
-        <td> {{ $registro->abono }}</td>
+        <td> {{ $registro->abonos->sum('valor') }} </td>
     </tr>
     @endforeach
     </tbody>
