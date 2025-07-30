@@ -13,3 +13,4 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
 //Rutas para los registros
 Route::get('/registros', [RegistroController::class, 'mostrarRegistros'])->name('registros')->middleware('auth');
 Route::post('/agregar', [RegistroController::class, 'registrar'])->name('agregar')->middleware('auth');
+Route::post('/editar/{id}', [RegistroController::class, 'editarRegistros'])->name('editar')->middleware('auth');

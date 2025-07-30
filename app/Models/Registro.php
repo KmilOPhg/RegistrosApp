@@ -16,6 +16,9 @@ class Registro extends Model
      */
     protected $table = 'registros';
 
+    //Hacer que restante aparezca en json
+    protected $appends = ['restante'];
+
     protected $fillable = [
         'nombre',
         'descripcion',
@@ -29,5 +32,13 @@ class Registro extends Model
 
     public function abonos() {
         return $this -> hasMany(Abono::class, 'id_registro', 'id');
+    }
+
+    public function getRestanteAttribute(): float {
+        if ($this->id_estado === 1) {
+            return 0.00;
+        }
+        $totalAbonos = $this->abonos()->sum('valor');
+        return $this->valor - $totalAbonos;
     }
 }

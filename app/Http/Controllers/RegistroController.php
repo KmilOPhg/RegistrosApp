@@ -7,6 +7,7 @@ use App\Models\Registro;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,10 +20,18 @@ class RegistroController extends Controller
      *
      * @return Factory|View|Application|RedirectResponse|object
      */
-    public function mostrarRegistros(){
+    public function mostrarRegistros(Request $request) {
         try {
-            $registros = Registro::with('estado')->get();
+            $registros = Registro::with('estado', 'abonos')->get();
             $abonos = Abono::with('registro')->get();
+
+            if ($request->ajax()) {
+                $view = view('vista_registro.tabla_registros', compact('registros', 'abonos'));
+
+                return response()->json([
+                    'html' => $view
+                ]);
+            }
 
             return view('vista_registro.main', compact('registros', 'abonos'));
         } catch (\Exception $e) {
@@ -76,6 +85,71 @@ class RegistroController extends Controller
             DB::rollback();
             Log::info('Error en el registro' . $e->getMessage());
             return back()->withErrors(['error' => 'Error en el registro']);
+        }
+    }
+
+    /**
+     * Encargado de editar los registros con peticion ajax
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function editarRegistros(Request $request): JsonResponse
+    {
+        if ($request->ajax()) {
+            DB::beginTransaction();
+
+            try {
+                $registro = Registro::find($request->id_registro);
+                $abono = Abono::find($request->id_abono);
+
+                if (!$abono) {
+                    DB::rollBack();
+                    return response()->json([
+                        'code' => 404,
+                        'msg' => 'error',
+                        'message' => 'Abono no encontrado'
+                    ]);
+                }
+
+                if ($request->abono <= 0 || $request->abono > $registro->restante) {
+                    DB::rollBack();
+                    return response()->json([
+                        'code' => 422,
+                        'msg' => 'error',
+                        'message' => 'El valor del abono debe ser mayor que 0 y menor o igual al restante',
+                    ]);
+                }
+
+                $abono->valor += $request->abono;
+                $abono->save();
+
+                DB::commit();
+
+                return response()->json([
+                    'code' => 200,
+                    'msg' => 'success',
+                    'message' => 'Encontrado correctamente',
+                    'registro' => $registro,
+                    'abono' => $request->abono,
+                    'abono actual' => $abono->valor,
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                return response()->json([
+                    'code' => 500,
+                    'msg' => 'error',
+                    'message' => 'Ocurrió un error al procesar la solicitud.',
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        } else {
+            return response()->json([
+                'code' => 404,
+                'msg' => 'error',
+                'message' => 'No se pudo encontrar el registro',
+            ]);
         }
     }
 }
