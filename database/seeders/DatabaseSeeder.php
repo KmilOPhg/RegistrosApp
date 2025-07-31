@@ -4,10 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\Estado;
 use App\Models\Registro;
-use App\Models\Rol;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,12 +21,29 @@ class DatabaseSeeder extends Seeder
          * Creamos las seeders que queramos aqui, creare user, roles y estado por defecto
          */
 
-        User::create(['name' => 'Developer', 'email' => 'camilohurtado256@gmail.com', 'password' => bcrypt('123456')]);
+        //Crear usuario developer y Admin por defecto
+        $developer = User::create([
+            'name' => 'Developer',
+            'email' => 'camilohurtado256@gmail.com',
+            'password' => bcrypt('123456')
+        ]);
+        $admin = User::create([
+            'name' => 'Admin',
+            'email' => 'massnivelsuplementosdeportivos@gmail.com',
+            'password' => bcrypt('16461829')
+        ]);
 
-        Rol::create(['nombre' => 'dev', 'descripcion' => 'Developer',]);
-        Rol::create(['nombre' => 'admin', 'descripcion' => 'Administrador',]);
-        Rol::create(['nombre' => 'user', 'descripcion' => 'Usuario',]);
+        //Creamos los roles
+        $rol_dev = Role::create(['name' => 'dev']);
+        $rol_admin = Role::create(['name' => 'admin']);
+        $rol_user = Role::create(['name' => 'user']);
 
+        //Conecar usuario developer con rol dev
+        $developer->assignRole($rol_dev);
+        $admin->assignRole($rol_admin);
+
+
+        //Crear los estados
         Estado::create(['estado' => 'Pagado',]);
         Estado::create(['estado' => 'Credito',]);
 

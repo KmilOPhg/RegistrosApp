@@ -16,7 +16,12 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
-        return view('vista_login.login');
+        try {
+            return view('vista_login.login');
+        } catch (\Throwable $th) {
+            return redirect()->intended('/login');
+        }
+
     }
 
     /**
