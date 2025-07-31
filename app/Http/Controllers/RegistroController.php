@@ -126,11 +126,6 @@ class RegistroController extends Controller
                 }
 
                 //Crear un nuevo abono en la tabla abono
-                /*Abono::create([
-                    'id_registro' => $request->id_registro,
-                    'valor' => $request->abono,
-                ]);*/
-
                 $this->crearAbono($request);
 
                 DB::commit();
