@@ -26,7 +26,7 @@ class RegistroController extends Controller
             $abonos = Abono::with('registro')->get();
 
             if ($request->ajax()) {
-                $view = view('vista_registro.tabla_registros', compact('registros', 'abonos'));
+                $view = view('vista_registro.tabla_registros', compact('registros', 'abonos'))->render();
 
                 return response()->json([
                     'html' => $view

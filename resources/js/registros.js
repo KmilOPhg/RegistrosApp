@@ -1,7 +1,11 @@
+import swal from "sweetalert2";
+
 document.addEventListener("DOMContentLoaded", function () {
     let formaPago = document.getElementById('formaPago');
     let campoAbono = document.getElementById('campoAbono');
     let labelAbono = document.getElementById('labelAbono');
+    actualizarAbono();
+
     /**
      * Miramos que forma de pago es si es credito o si es contado
      * Miramos si los campos existen
@@ -37,26 +41,31 @@ document.addEventListener("DOMContentLoaded", function () {
     formaPago.addEventListener('change', ponerAbono);
 
     /**
-     * El ready para ejecutar las funciones AJAX
+     * Ejecutar las funciones AJAX
      */
-    $(document).ready(function () {
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        })
-        actualizarAbono();
-    });
-
     function actualizarAbono() {
-        $("#tabla_registros tbody").on('click', '.actualizarAbono', function() {
-            let id_registro = $(this).attr('data-id_registro');
-            let id_abono = $(this).attr('data-id_abono');
-            let valor_abono = $(this).attr('data-valor_abono');
-            console.log("ID REGISTRO " , id_registro);
-            console.log("ID ABONO ",  id_abono);
-            console.log("VALOR ABONO " , valor_abono);
-            mostrarAbono(id_registro,  id_abono, valor_abono);
+        //Seleccionamos la tabla y capturamos el click al boton
+        document.querySelector('#tabla_registros').addEventListener('click',  function(event) {
+
+            //Buscamos si algun elemeno clickeado tiene la clase btnAbonar
+            const btnAbonar = event.target.closest('.btnAbonar');
+            if(btnAbonar) { //Si encuentra el boton
+
+                //Obtenemos los valores del html pasados por el boton y los pasamos por argumentos a la funcion
+                let id_registro = btnAbonar.getAttribute('data-id_registro');
+                let id_abono = btnAbonar.getAttribute('data-id_abono');
+                let valor_abono = btnAbonar.getAttribute('data-valor_abono');
+
+                //No me molestes, ya se que no estoy haciendo nada con esta promesa
+                // noinspection JSIgnoredPromiseFromCall
+                mostrarAbono(id_registro, id_abono, valor_abono);
+            } else {
+                Swal.fire({
+                   icon: 'error',
+                   title: 'Error',
+                   text: 'Hubo un error inesperado al presionar el boton',
+                });
+            }
         });
     }
 
@@ -64,6 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
      * Ajax para abonar
      */
     async function mostrarAbono(id_registro, id_abono, valor_abono) {
+        //Alerta SwalFire
         const result = await Swal.fire({
             title: "Agregar abono",
             input: "number",
@@ -72,55 +82,86 @@ document.addEventListener("DOMContentLoaded", function () {
             cancelButtonText: "Cancelar",
             confirmButtonText: "Guardar",
             showLoaderOnConfirm: true,
+
+            //Al darle confirmar hacer una validacion
             preConfirm: (abono) => {
                 if (!abono || abono <= 0) {
                     Swal.showValidationMessage('Ingresa un valor valido');
                 }
                 return abono;
             }
-        }).then((result) => {
+            //Entonces inicia el resultado si lo confirma
+        }).then(async (result) => {
             if (result.isConfirmed) {
                 const abonoIngresado = result.value; //Valor del abono ingresado
                 console.log("Abono ingresado", abonoIngresado);
 
                 //Enviamos ajax
-                $.ajax({
-                    type: "POST",
-                    url: '/editar/' + id_registro,
-                    data: {
-                        id_registro: id_registro,
-                        id_abono: id_abono,
-                        valor_abono: valor_abono,
-                        abono: abonoIngresado,
-                    },
-                    dataType: 'json',
-                    success: function (response) {
-                        if(response.code === 200) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Abono agregado",
-                                text: "Abonado: " + abonoIngresado,
-                                confirmButtonText: "Listo",
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Advertencia',
-                                text: response.message
-                            });
-                        }
-                    },
-                    error: function (data) {
-                        let errorJson = JSON.parse(data.responseText);
+                try {
+                    //Espera a que todo esto se ejecute con await
+                    const response = await fetch(`/editar/${id_registro}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json",
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
+                        body: JSON.stringify({
+                            id_registro: id_registro,
+                            id_abono: id_abono,
+                            valor_abono: valor_abono,
+                            abono:  abonoIngresado,
+                        })
+                    });
+
+                    //Espera a que devuelva el json con await
+                    const data = await response.json();
+
+                    if(data.code === 200) {
                         Swal.fire({
-                            icon: "error",
-                            title: "Error al guardar el abono",
-                            text: errorJson.message,
+                            icon: "success",
+                            title: "Abono agregado",
+                            text: "Abonado: " + abonoIngresado,
+                            confirmButtonText: "Listo",
+                        }).then(() =>{ //Entonces vamos a la vista
+                            fetch('/registros', {
+                                headers: {
+                                    //Detectar AJAX en laravel
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                }
+                            }).then(response => {
+                                if(!response.ok) throw new Error('Error en la respuesta' + response.statusText);
+                                return response.json(); //Retornamos un json
+                            }).then(data => { //Actualizamos la tabla
+                                document.querySelector('#tabla_registros').innerHTML = data.html;
+                            }).catch(e => { //Un catch con Swal para mirar si hay un error
+                                console.log('Hubo un error con la carga de la tabla' + e);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Hubo un error al actualizar la tabla.',
+                                });
+                            });
+                        });
+                    } else {
+                        await Swal.fire({
+                            icon: 'warning',
+                            title: 'Advertencia',
+                            text: 'No puedes abonar mas de lo que te deben'
                         });
                     }
-                });
+                } catch (error) {
+                    console.log('Hubo un error al cargar el resultado: ' , error);
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Hubo un error al actualizar la tabla '+ error.message,
+                    });
+                }
             } else {
-
+                await swal.fire({
+                   icon: "info",
+                   title: "Cancelado",
+                   text: "Cancelaste el abono"
+                });
             }
         });
     }

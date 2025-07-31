@@ -44,8 +44,8 @@
                     <td> {{ $registro->restante }}</td>
                     <td>
                         @if ($registro->estado->id == 2 && $registro->abonos->sum('valor') < $registro->valor)
-                            <button
-                                class="actualizarAbono"
+                                <button
+                                class="btnAbonar"
                                 data-id_registro="{{ $registro->id }}"
                                 data-id_abono="{{ $abono->id }}"
                                 data-valor_abono="{{ $abono->valor }}"
