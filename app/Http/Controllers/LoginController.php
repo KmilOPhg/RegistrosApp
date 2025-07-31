@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
     /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|object
+     * @return Application|View|object
      */
-    public function showLoginForm() {
+    public function showLoginForm()
+    {
         return view('vista_login.login');
     }
 
@@ -18,9 +23,10 @@ class LoginController extends Controller
      * Maneja el intento de login
      *
      * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
-    public function login(Request $request) {
+    public function login(Request $request): RedirectResponse
+    {
         $credenciales = $request->validate([
             'email' => 'required|email',
             'password' => 'required'
@@ -48,9 +54,10 @@ class LoginController extends Controller
      * Manejar el logout
      *
      * @param Request $request
-     * @return \Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector|object
+     * @return RedirectResponse
      */
-    public function logout(Request $request) {
+    public function logout(Request $request): RedirectResponse
+    {
         Auth::logout();
 
         $request->session()->invalidate();

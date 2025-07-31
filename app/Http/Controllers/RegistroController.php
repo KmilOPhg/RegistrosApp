@@ -121,8 +121,10 @@ class RegistroController extends Controller
                     ]);
                 }
 
-                $abono->valor += $request->abono;
-                $abono->save();
+                Abono::create([
+                    'id_registro' => $request->id_registro,
+                    'valor' => $request->abono,
+                ]);
 
                 DB::commit();
 

@@ -34,27 +34,32 @@
             </td>
         </tr>
         @else
-            @foreach ($registro->abonos as $abono)
+            @php
+            //Agarramos el último abono de la tabla abonos por la relacion en Registro.php de hasMany
+            $ultimoAbono = $registro->abonos->sortByDesc('created_at')->first();
+
+            //Agarramos la suma total de los abonos de ese registro
+            $totalAbonado = $registro->abonos->sum('valor');
+            @endphp
+            @if ($ultimoAbono)
                 <tr>
                     <td>{{ $registro->nombre }}</td>
-                    <td> {{ $registro->descripcion }}</td>
-                    <td> {{ $registro->valor }}</td>
-                    <td> {{ $registro->estado->estado }}</td>
-                    <td> {{ $abono->valor }} </td>
-                    <td> {{ $registro->restante }}</td>
+                    <td>{{ $registro->descripcion }}</td>
+                    <td>{{ $registro->valor }}</td>
+                    <td>{{ $registro->estado->estado }}</td>
+                    <td>{{ $totalAbonado }}</td> {{-- Ponemos el total abonado en la tabla para que se vea todo lo abonado --}}
+                    <td>{{ $registro->restante }}</td>
                     <td>
-                        @if ($registro->estado->id == 2 && $registro->abonos->sum('valor') < $registro->valor)
-                                <button
-                                class="btnAbonar"
-                                data-id_registro="{{ $registro->id }}"
-                                data-id_abono="{{ $abono->id }}"
-                                data-valor_abono="{{ $abono->valor }}"
-                                type="button"> Abonar
-                            </button>
-                        @endif
+                        <button
+                            class="btnAbonar"
+                            data-id_registro="{{ $registro->id }}"
+                            data-id_abono="{{ $ultimoAbono->id }}"
+                            data-valor_abono="{{ $ultimoAbono->valor }}"
+                            type="button"> Abonar
+                        </button>
                     </td>
                 </tr>
-            @endforeach
+            @endif
         @endif
     @endforeach
     </tbody>
