@@ -96,13 +96,16 @@ class RegistroController extends Controller
      */
     public function editarRegistros(Request $request): JsonResponse
     {
+        //Validamos si la respuesta es AJAX
         if ($request->ajax()) {
             DB::beginTransaction();
 
             try {
+                //Obtenemos los registros y los abonos por ID con el request
                 $registro = Registro::find($request->id_registro);
                 $abono = Abono::find($request->id_abono);
 
+                //Si no encuentra el abono
                 if (!$abono) {
                     DB::rollBack();
                     return response()->json([
@@ -112,6 +115,7 @@ class RegistroController extends Controller
                     ]);
                 }
 
+                //Validar que el valor del abono sea valido
                 if ($request->abono <= 0 || $request->abono > $registro->restante) {
                     DB::rollBack();
                     return response()->json([
@@ -121,6 +125,7 @@ class RegistroController extends Controller
                     ]);
                 }
 
+                //Crear un nuevo abono en la tabla abono
                 Abono::create([
                     'id_registro' => $request->id_registro,
                     'valor' => $request->abono,
@@ -128,6 +133,7 @@ class RegistroController extends Controller
 
                 DB::commit();
 
+                //Respuesta correcta devolver codigo 200
                 return response()->json([
                     'code' => 200,
                     'msg' => 'success',
@@ -139,6 +145,7 @@ class RegistroController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
 
+                //Y pues el catch
                 return response()->json([
                     'code' => 500,
                     'msg' => 'error',
@@ -150,7 +157,7 @@ class RegistroController extends Controller
             return response()->json([
                 'code' => 404,
                 'msg' => 'error',
-                'message' => 'No se pudo encontrar el registro',
+                'message' => 'No se pudo encontrar el AJAX',
             ]);
         }
     }
