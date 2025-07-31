@@ -126,10 +126,12 @@ class RegistroController extends Controller
                 }
 
                 //Crear un nuevo abono en la tabla abono
-                Abono::create([
+                /*Abono::create([
                     'id_registro' => $request->id_registro,
                     'valor' => $request->abono,
-                ]);
+                ]);*/
+
+                $this->crearAbono($request);
 
                 DB::commit();
 
@@ -159,6 +161,17 @@ class RegistroController extends Controller
                 'msg' => 'error',
                 'message' => 'No se pudo encontrar el AJAX',
             ]);
+        }
+    }
+
+    public function crearAbono(Request $request){
+        try {
+            Abono::create([
+                'id_registro' => $request->id_registro,
+                'valor' => $request->abono,
+            ]);
+        } catch (\Exception $e) {
+            Log::info('Error al crear abono' . $e->getMessage());
         }
     }
 }
