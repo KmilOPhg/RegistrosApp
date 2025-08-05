@@ -48,6 +48,11 @@
             @endforeach
             </tbody>
         </table>
+
+        <div class="pagination-wrapper">
+            {{ $registros->links('pagination::bootstrap-5') }}
+        </div>
+
     </div>
 
     <h4 class="mt-4">Dinero: {{ number_format($dineroTotal) }}</h4>

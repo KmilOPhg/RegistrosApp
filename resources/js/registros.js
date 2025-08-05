@@ -166,4 +166,45 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    /**
+     * Funcion para pasar pagina AJAX
+     * @returns {Promise<void>}
+     */
+    async function pasarPagina(url) {
+        //Enviar AJAX
+        try {
+            //Usamos fetch con GET para que laravel reconozca que es AJAX
+            const response = await fetch(url, {
+                method: "GET",
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+            });
+
+            //Esperamos una respuesta json
+            const data = await response.json();
+
+            //Actualizamos la tabla
+            document.querySelector('#contenedor_tabla').innerHTML = data.html;
+        } catch (error) {
+            console.error("Error al cargar la página:", error);
+            await swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Hubo un error al cargar la tabla.",
+            })
+        }
+    }
+
+    /**
+     * Listener para manejar la paginacion con AJAX
+     */
+    document.addEventListener('click', function (e) {
+        if (e.target.matches('.pagination a')) {
+            e.preventDefault();
+            const url = e.target.href;
+            //No me molestes, ya sé que no estoy haciendo nada con esta promesa
+            // noinspection JSIgnoredPromiseFromCall
+            pasarPagina(url);
+        }
+    });
 });

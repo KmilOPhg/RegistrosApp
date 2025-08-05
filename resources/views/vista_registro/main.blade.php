@@ -10,23 +10,22 @@
     <title>Registros de productos</title>
 </head>
 
-<header class="header-ola">
-    <div class="container py-5 text-center">
-        <h1 class="display-4 fw-bold">Registro de clientes</h1>
-    </div>
-
-    <!-- Ola negra de fondo, cubre todo el header -->
-    <svg class="ola-negra" viewBox="0 0 1200 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0,300 C300,100 900,400 1200,200 L1200,0 L0,0 Z" />
-    </svg>
-
-    <div class="header-spacing"></div>
-</header>
-
-
 <body id="body">
+    <header class="header-ola">
+        <div class="container py-5 text-center">
+            <h1 class="display-4 fw-bold">Registro de clientes</h1>
+        </div>
+
+        <!-- Ola negra de fondo, cubre todo el header -->
+        <svg class="ola-negra" viewBox="0 0 1200 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,300 C300,100 900,400 1200,200 L1200,0 L0,0 Z" />
+        </svg>
+
+        <div class="header-spacing"></div>
+    </header>
+
     @if($errors->any())
-        <div class="alert alert-danger" id="mensaje-error">
+        <div class="alert alert-danger container" id="mensaje-error">
             <ul class="mb-0" >
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -50,11 +49,11 @@
             let mensajeSuccess = document.getElementById('mensaje-success');
             setTimeout(() => {
                 mensajeSuccess.style.display = 'none';
-            }, 2000);
+            }, 4000);
         </script>
     @endif
 
-    <div class="container">
+    <div class="container page-wrapper">
         <div class="row">
             <!-- FORMULARIO -->
             <div class="col-md-4 mb-4">
@@ -111,6 +110,5 @@
             </svg>
         </div>
     </footer>
-
 </body>
 </html>

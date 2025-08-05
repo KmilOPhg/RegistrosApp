@@ -22,7 +22,7 @@ class RegistroController extends Controller
      */
     public function mostrarRegistros(Request $request) {
         try {
-            $registros = Registro::with('estado', 'abonos')->get();
+            $registros = Registro::with('estado', 'abonos')->paginate(9);
             $abonos = Abono::with('registro')->get();
 
             $dineroTotal = $this->calcularDineroTotal($registros, $abonos);
@@ -48,7 +48,8 @@ class RegistroController extends Controller
      * @param Request $request
      * @return RedirectResponse
      */
-    public function registrar(Request $request) {
+    public function registrar(Request $request)
+    {
         //Validamos los datos del formulario, se tiene que poner los campos del formulario
         $validarRegistro = $request->validate([
             'cliente' => 'required|string|max:255',
@@ -71,6 +72,9 @@ class RegistroController extends Controller
         //Calculamos el precio total con cantidad y valor
         $precioTotal = $cantidad * $precio;
 
+        if ($abono > $precioTotal) {
+            return back()->withErrors(['abono' => 'No puedes abonar mas del total'])->withInput();
+        }
 
         DB::beginTransaction();
 
