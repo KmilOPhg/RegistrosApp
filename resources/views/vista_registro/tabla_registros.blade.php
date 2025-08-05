@@ -79,3 +79,5 @@
     @endforeach
     </tbody>
 </table>
+
+<h2 id="dinero_total">Dinero: {{ number_format($dineroTotal) }}</h2>

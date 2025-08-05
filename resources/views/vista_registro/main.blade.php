@@ -10,8 +10,6 @@
     <title>Registros de productos</title>
 </head>
 <body id="body">
-    <h1>Registros</h1>
-
     @if($errors->any())
         <div class="alert alert-danger" id="mensaje-error">
             <ul class="mb-0" >
@@ -41,6 +39,7 @@
         </script>
     @endif
 
+    <h1>Registros</h1>
 
     <form method="POST" action="{{ route('agregar') }}">
         @csrf
@@ -69,6 +68,11 @@
         <button type="submit">Añadir</button>
     </form>
 
-    @include('vista_registro.tabla_registros', ['registros' => $registros])
+    <div id="contenedor_tabla">
+        @include('vista_registro.tabla_registros', ['registros' => $registros])
+    </div>
+
+    {{-- @include('vista_registro.tabla_registros', ['registros' => $registros]) --}}
+
 </body>
 </html>

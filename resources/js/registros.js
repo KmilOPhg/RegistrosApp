@@ -45,7 +45,8 @@ document.addEventListener("DOMContentLoaded", function () {
      */
     function actualizarAbono() {
         //Seleccionamos la tabla y capturamos el click al boton
-        document.querySelector('#tabla_registros').addEventListener('click',  function(event) {
+        //En este caso se selecciona el contenedor de la tabla que encierra toda la tabla en el main.blade.php
+        document.querySelector('#contenedor_tabla').addEventListener('click',  function(event) {
 
             //Buscamos si algún elemeno clicado tiene la clase btnAbonar
             const btnAbonar = event.target.closest('.btnAbonar');
@@ -130,8 +131,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             }).then(response => {
                                 if(!response.ok) throw new Error('Error en la respuesta' + response.statusText);
                                 return response.json(); //Retornamos un json
-                            }).then(data => { //Actualizamos la tabla
-                                document.querySelector('#tabla_registros').innerHTML = data.html;
+                            }).then(data => { //Actualizamos todo el contenedor de la tabla que encierra la tabla en el main.blade.php
+                                document.querySelector('#contenedor_tabla').innerHTML = data.html;
                             }).catch(e => { //Un catch con Swal para mirar si hay un error
                                 console.log('Hubo un error con la carga de la tabla' + e);
                                 Swal.fire({

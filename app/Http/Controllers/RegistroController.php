@@ -25,15 +25,27 @@ class RegistroController extends Controller
             $registros = Registro::with('estado', 'abonos')->get();
             $abonos = Abono::with('registro')->get();
 
+            //Sumar para sacar el valor total
+            $sumaCreditos = $abonos->sum('valor');
+            $sumaContados = 0;
+
+            foreach ($registros as $registro) {
+                if ($registro->id_estado === 1) {
+                    $sumaContados += $registro->valor_total;
+                }
+            }
+
+            $dineroTotal = $sumaContados + $sumaCreditos;
+
             if ($request->ajax()) {
-                $view = view('vista_registro.tabla_registros', compact('registros', 'abonos'))->render();
+                $view = view('vista_registro.tabla_registros', compact('registros', 'abonos', 'dineroTotal'))->render();
 
                 return response()->json([
                     'html' => $view
                 ]);
             }
 
-            return view('vista_registro.main', compact('registros', 'abonos'));
+            return view('vista_registro.main', compact('registros', 'abonos', 'dineroTotal'));
         } catch (\Exception $e) {
             Log::info('Error en la vista' . $e->getMessage());
             return back()->withErrors(['error' => 'Error en la vista']);
