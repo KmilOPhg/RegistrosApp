@@ -1,0 +1,26 @@
+.header-ola {
+    position: relative;
+    overflow: hidden;
+    color: white;
+    /* No background-color negro, será la ola negra la que lo represente */
+    min-height: 250px; /* altura base para que se vea la ola */
+}
+
+.header-ola .container {
+    position: relative;
+    z-index: 2;
+}
+
+.ola-negra {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 250px;
+    fill: #000; /* negro para la ola */
+    z-index: 1;
+}
+
+.header-spacing {
+    height: 100px;
+}

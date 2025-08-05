@@ -25,17 +25,7 @@ class RegistroController extends Controller
             $registros = Registro::with('estado', 'abonos')->get();
             $abonos = Abono::with('registro')->get();
 
-            //Sumar para sacar el valor total
-            $sumaCreditos = $abonos->sum('valor');
-            $sumaContados = 0;
-
-            foreach ($registros as $registro) {
-                if ($registro->id_estado === 1) {
-                    $sumaContados += $registro->valor_total;
-                }
-            }
-
-            $dineroTotal = $sumaContados + $sumaCreditos;
+            $dineroTotal = $this->calcularDineroTotal($registros, $abonos);
 
             if ($request->ajax()) {
                 $view = view('vista_registro.tabla_registros', compact('registros', 'abonos', 'dineroTotal'))->render();
@@ -193,5 +183,15 @@ class RegistroController extends Controller
         } catch (\Exception $e) {
             Log::info('Error al crear abono' . $e->getMessage());
         }
+    }
+
+    function calcularDineroTotal($registros, $abonos): float
+    {
+        $sumaCreditos = $abonos->sum('valor');
+
+        //Filtra los registros que tienen un estado igual a 1 y suma sus valores totales
+        $sumaContados = $registros->where('id_estado', 1)->sum('valor_total');
+
+        return $sumaCreditos + $sumaContados;
     }
 }
