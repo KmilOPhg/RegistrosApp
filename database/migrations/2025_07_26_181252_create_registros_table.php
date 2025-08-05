@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('descripcion');
-            $table->integer('valor');
+            $table->integer('valor_unitario');
+            $table->integer('valor_total');
             $table->integer('cantidad');
             $table->foreignId('id_estado')->constrained('estados');
             $table->timestamps();

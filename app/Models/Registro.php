@@ -22,7 +22,8 @@ class Registro extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'valor',
+        'valor_unitario',
+        'valor_total',
         'cantidad',
         'id_estado',
     ];
@@ -40,6 +41,6 @@ class Registro extends Model
             return 0.00;
         }
         $totalAbonos = $this->abonos()->sum('valor');
-        return $this->valor - $totalAbonos;
+        return $this->valor_total - $totalAbonos;
     }
 }

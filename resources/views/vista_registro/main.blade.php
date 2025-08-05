@@ -55,7 +55,7 @@
         <input type="number" name="precio" placeholder="precio" required>
 
         <label>Cantidad</label>
-        <input type="number" name="cantidad" id="cantidad">
+        <input type="number" name="cantidad" id="cantidad" required>
 
         <label>Forma de pago</label>
         <select name="formaPago" id="formaPago">

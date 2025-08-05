@@ -46,7 +46,7 @@ class RegistroController extends Controller
      * @param Request $request
      * @return RedirectResponse
      */
-    public function registrar(Request $request){
+    public function registrar(Request $request) {
         //Validamos los datos del formulario, se tiene que poner los campos del formulario
         $validarRegistro = $request->validate([
             'cliente' => 'required|string|max:255',
@@ -54,19 +54,32 @@ class RegistroController extends Controller
             'precio' => 'required|numeric|min:0',
             'formaPago' => 'required|integer|in:1,2', //1: Contado, 2: Credito
             'abono' => 'nullable|numeric|min:0',
+            'cantidad' => 'required|numeric|min:1',
         ]);
 
         //Si el abono es nulo lo ponemos como cero
         $abono = $validarRegistro['abono'] ?? 0;
 
-            DB::beginTransaction();
+        /**
+         * Guardamos cantidad y precio para operar
+         */
+        $cantidad = $validarRegistro['cantidad'];
+        $precio = $validarRegistro['precio'];
+
+        //Calculamos el precio total con cantidad y valor
+        $precioTotal = $cantidad * $precio;
+
+
+        DB::beginTransaction();
 
         try {
             //Creamos el registro aqui ponemos los campos que van en la base de datos
             $crearRegistro = Registro::create([
                 'nombre' => $validarRegistro['cliente'],
                 'descripcion' => $validarRegistro['producto'],
-                'valor' => $validarRegistro['precio'],
+                'valor_unitario' => $validarRegistro['precio'],
+                'valor_total' => $precioTotal,
+                'cantidad' => $validarRegistro['cantidad'],
                 'id_estado' => $validarRegistro['formaPago'],
             ]);
 
