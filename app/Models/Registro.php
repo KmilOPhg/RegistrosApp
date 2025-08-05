@@ -21,6 +21,7 @@ class Registro extends Model
 
     protected $fillable = [
         'nombre',
+        'celular',
         'descripcion',
         'valor_unitario',
         'valor_total',

@@ -56,13 +56,18 @@
     <div class="container page-wrapper">
         <div class="row">
             <!-- FORMULARIO -->
-            <div class="col-md-4 mb-4">
+            <div class="col-md-12 mb-4">
                 <form method="POST" action="{{ route('agregar') }}" class="card p-3 shadow-sm">
                     @csrf
 
                     <div class="mb-3">
                         <label class="form-label">Cliente</label>
                         <input type="text" name="cliente" class="form-control" placeholder="Nombre del cliente" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Celular</label>
+                        <input type="number" name="celular" class="form-control" placeholder="Celular del cliente" required>
                     </div>
 
                     <div class="mb-3">

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('registros', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->string('celular');
             $table->string('descripcion');
             $table->integer('valor_unitario');
             $table->integer('valor_total');

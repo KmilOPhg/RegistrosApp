@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let formaPago = document.getElementById('formaPago');
     let campoAbono = document.getElementById('campoAbono');
     let labelAbono = document.getElementById('labelAbono');
+    let ultimaPagina = null;
     actualizarAbono();
 
     /**
@@ -122,25 +123,11 @@ document.addEventListener("DOMContentLoaded", function () {
                             title: "Abono agregado",
                             text: "Abonado: " + abonoIngresado,
                             confirmButtonText: "Listo",
-                        }).then(() =>{ //Entonces vamos a la vista
-                            fetch('/registros', {
-                                headers: {
-                                    //Detectar AJAX en laravel
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                }
-                            }).then(response => {
-                                if(!response.ok) throw new Error('Error en la respuesta' + response.statusText);
-                                return response.json(); //Retornamos un json
-                            }).then(data => { //Actualizamos todo el contenedor de la tabla que encierra la tabla en el main.blade.php
-                                document.querySelector('#contenedor_tabla').innerHTML = data.html;
-                            }).catch(e => { //Un catch con Swal para mirar si hay un error
-                                console.log('Hubo un error con la carga de la tabla' + e);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Oops...',
-                                    text: 'Hubo un error al actualizar la tabla.',
-                                });
-                            });
+                        }).then(() =>{
+                            //Entonces vamos a la vista dejando solo la ultima pagina
+                            if(ultimaPagina) {
+                                pasarPagina(ultimaPagina);
+                            }
                         });
                     } else {
                         await Swal.fire({
@@ -172,6 +159,8 @@ document.addEventListener("DOMContentLoaded", function () {
      * @returns {Promise<void>}
      */
     async function pasarPagina(url) {
+        ultimaPagina = url;
+
         //Enviar AJAX
         try {
             //Usamos fetch con GET para que laravel reconozca que es AJAX

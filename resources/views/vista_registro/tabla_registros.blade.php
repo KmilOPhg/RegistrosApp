@@ -5,6 +5,7 @@
             <tr>
                 <th>Fecha</th>
                 <th>Cliente</th>
+                <th>Celular</th>
                 <th>Producto</th>
                 <th>Precio Unidad</th>
                 <th>Precio Total</th>
@@ -24,6 +25,7 @@
                 <tr>
                     <td>{{ $registro->created_at->format('d/m/Y') }}</td>
                     <td>{{ $registro->nombre }}</td>
+                    <td>{{ $registro->celular }}</td>
                     <td>{{ $registro->descripcion }}</td>
                     <td>{{ number_format($registro->valor_unitario) }}</td>
                     <td>{{ number_format($registro->valor_total) }}</td>

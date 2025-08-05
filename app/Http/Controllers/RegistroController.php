@@ -53,6 +53,7 @@ class RegistroController extends Controller
         //Validamos los datos del formulario, se tiene que poner los campos del formulario
         $validarRegistro = $request->validate([
             'cliente' => 'required|string|max:255',
+            'celular' => 'required|numeric|min:0',
             'producto' => 'required|string|max:255',
             'precio' => 'required|numeric|min:0',
             'formaPago' => 'required|integer|in:1,2', //1: Contado, 2: Credito
@@ -82,6 +83,7 @@ class RegistroController extends Controller
             //Creamos el registro aqui ponemos los campos que van en la base de datos
             $crearRegistro = Registro::create([
                 'nombre' => $validarRegistro['cliente'],
+                'celular' => $validarRegistro['celular'],
                 'descripcion' => $validarRegistro['producto'],
                 'valor_unitario' => $validarRegistro['precio'],
                 'valor_total' => $precioTotal,
