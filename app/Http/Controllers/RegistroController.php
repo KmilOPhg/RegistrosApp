@@ -71,10 +71,10 @@ class RegistroController extends Controller
             ]);
 
             //Creamos el abono en la tabla abonos con el id del registro creado
-            if ($abono > 0 || $crearRegistro['formaPago'] == 2) {
+            if ($abono >= 0 || $crearRegistro['formaPago'] == 2) {
                 //Usamos la relacion para crear el abono, asignando automaticamente el id_Registro
                 $crearRegistro->abonos()->create([
-                    'valor' => $abono,
+                    'valor' => $abono ?? 0,
                 ]);
             }
 
@@ -115,7 +115,7 @@ class RegistroController extends Controller
                     ]);
                 }
 
-                //Validar que el valor del abono sea valido
+                //Validar que el valor del abono sea válido
                 if ($request->abono <= 0 || $request->abono > $registro->restante) {
                     DB::rollBack();
                     return response()->json([

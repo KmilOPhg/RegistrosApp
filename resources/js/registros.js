@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //Seleccionamos la tabla y capturamos el click al boton
         document.querySelector('#tabla_registros').addEventListener('click',  function(event) {
 
-            //Buscamos si algun elemeno clickeado tiene la clase btnAbonar
+            //Buscamos si algún elemeno clicado tiene la clase btnAbonar
             const btnAbonar = event.target.closest('.btnAbonar');
             if(btnAbonar) { //Si encuentra el boton
 
@@ -56,15 +56,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 let id_abono = btnAbonar.getAttribute('data-id_abono');
                 let valor_abono = btnAbonar.getAttribute('data-valor_abono');
 
-                //No me molestes, ya se que no estoy haciendo nada con esta promesa
+                //No me molestes, ya sé que no estoy haciendo nada con esta promesa
                 // noinspection JSIgnoredPromiseFromCall
                 mostrarAbono(id_registro, id_abono, valor_abono);
             } else {
-                Swal.fire({
+                /*Swal.fire({
                    icon: 'error',
                    title: 'Error',
                    text: 'Hubo un error inesperado al presionar el boton',
-                });
+                });*/
             }
         });
     }
@@ -157,11 +157,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 }
             } else {
-                await swal.fire({
+                /*await swal.fire({
                    icon: "info",
                    title: "Cancelado",
                    text: "Cancelaste el abono"
-                });
+                });*/
             }
         });
     }

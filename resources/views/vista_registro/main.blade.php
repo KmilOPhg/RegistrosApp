@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/js/app.js', 'resources/css/app.css'])
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <title>Registros de productos</title>
-    @vite(['resources/js/app.js'])
 </head>
-<body>
+<body id="body">
     <h1>Registros</h1>
 
     @if($errors->any())
@@ -53,6 +53,9 @@
 
         <label>Precio</label>
         <input type="number" name="precio" placeholder="precio" required>
+
+        <label>Cantidad</label>
+        <input type="number" name="cantidad" id="cantidad">
 
         <label>Forma de pago</label>
         <select name="formaPago" id="formaPago">

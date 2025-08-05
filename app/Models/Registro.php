@@ -23,6 +23,7 @@ class Registro extends Model
         'nombre',
         'descripcion',
         'valor',
+        'cantidad',
         'id_estado',
     ];
 

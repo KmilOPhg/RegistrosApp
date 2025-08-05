@@ -1,6 +1,7 @@
 <table id="tabla_registros">
     <thead>
     <tr>
+        <th>Fecha</th>
         <th>Cliente</th>
         <th>Producto</th>
         <th>Precio</th>
@@ -15,12 +16,13 @@
         @if($registro->abonos->isEmpty())
         {{-- Mostrar igualmente la fila aunque no tenga abonos --}}
         <tr>
+            <td>{{ $registro->created_at }}</td>
             <td>{{ $registro->nombre }}</td>
             <td> {{ $registro->descripcion }}</td>
             <td> {{ $registro->valor }}</td>
             <td> {{ $registro->estado->estado }}</td>
-            <td> NO APLICA </td>
-            <td> NO APLICA</td>
+            <td> {{ $registro->$abonos }} </td>
+            <td> {{ $registro->restante }}</td>
             <td>
                 @if ($registro->estado->id == 2 && $registro->abonos->sum('valor') < $registro->valor)
                     <button
@@ -43,6 +45,7 @@
             @endphp
             @if ($ultimoAbono)
                 <tr>
+                    <td>{{ $registro->created_at }}</td>
                     <td>{{ $registro->nombre }}</td>
                     <td>{{ $registro->descripcion }}</td>
                     <td>{{ $registro->valor }}</td>
