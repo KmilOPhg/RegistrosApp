@@ -32,6 +32,17 @@
                 @endforeach
             </div>
         @endif
+        @if($errors->any())
+            <script>
+                $(function () {
+                    const btn = $("#go");
+                    const header = $("#litheader");
+
+                    header.removeClass("poweron");
+                    btn.addClass("denied").val("Access Denied");
+                });
+            </script>
+        @endif
 
         <p>
             <label for="email">Correo electrónico</label>
