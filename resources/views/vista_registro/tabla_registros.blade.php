@@ -58,5 +58,5 @@
     </div>
 
     <h4 class="mt-4">Dinero: {{ number_format($dineroTotal) }}</h4>
-    <h4 class="mt-4">Dinero que debe: Nombre cliente</h4>
+    <h4 id="infoCliente" class="mt-4"></h4>
 </div>

@@ -183,6 +183,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             //Actualizamos la tabla
             document.querySelector('#contenedor_tabla').innerHTML = data.html;
+
+            //Calculamos la deuda de un cliente
+            caluclarDeudaCliente(data);
         } catch (error) {
             console.error("Error al cargar la página:", error);
             await swal.fire({
@@ -190,6 +193,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 title: "Oops...",
                 text: "Hubo un error al cargar la tabla.",
             })
+        }
+    }
+
+    /**
+     * Fumcion para calcular la deuda de un cliente
+     * @param data
+     */
+    function caluclarDeudaCliente(data) {
+        //Agarramos el h4 del HTML para insertar el texto de lo que debe
+        const infoClienteDeuda = document.querySelector('#infoCliente');
+
+        //De la data que recibimos, agarramos del backend el nombre y la deuda que pasamos por JSON
+        //Viene de la funcion mostrarRegistros()
+        if(data.deudaCliente) {
+            //Accedemos a los datos, nombre y deuda para luego meterlos en el h4 del HTML
+            const nombre = data.deudaCliente.nombre;
+            const deuda = data.deudaCliente.deuda.toLocaleString();
+            infoClienteDeuda.textContent = `Dinero que debe ${nombre}: ${deuda}`;
+        } else {
+            infoClienteDeuda.textContent = ``;
         }
     }
 

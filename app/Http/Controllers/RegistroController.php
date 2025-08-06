@@ -24,6 +24,31 @@ class RegistroController extends Controller
         try {
             //Agarramos el celular del cliente
             $celular = $request->get('celular');
+            $deudaCliente = null;
+
+            /**
+             * Este if se encarga de que solo cuando se hayan ingresado
+             * los 10 digitos de un celular haga el cálculo de cuanto deben
+             * con el restante que tienen
+             */
+            if($celular && strlen($celular) === 10) {
+                $clienteEncontrado = Registro::where('celular', $celular)->with('abonos')->get();
+
+                if($clienteEncontrado->isNotEmpty()) {
+                    $nombreCliente = $clienteEncontrado->first()->nombre;
+                    $deuda = $clienteEncontrado->sum('restante');
+
+                    /**
+                     * Guardamos el nombre y la deuda total en este arreglo
+                     * y lo ponemos en el return JSON de esta funcion para luego
+                     * usarlo en el JS ya que lo retornamos como JSON
+                     */
+                    $deudaCliente = [
+                        'nombre' => $nombreCliente,
+                        'deuda' => $deuda,
+                    ];
+                }
+            }
 
             //Aplicamos un filtro con when, tomamos el celular y lo ponemos en funcion
             $registros = Registro::when($celular, function ($query) use ($celular) {
@@ -32,7 +57,7 @@ class RegistroController extends Controller
             })->with('estado', 'abonos')->paginate(7);
 
             $abonos = Abono::with('registro')->get();
-            $dineroTotal = $this->calcularDineroTotal($registros, $abonos);
+            $dineroTotal = $this->calcularDineroTotal();
 
             //Miramos si la respuesta es AJAX
             if ($request->ajax()) {
@@ -40,7 +65,8 @@ class RegistroController extends Controller
 
                 //Si es AJAX retornamos el html
                 return response()->json([
-                    'html' => $view
+                    'html' => $view,
+                    'deudaCliente' => $deudaCliente,
                 ]);
             }
 
@@ -212,12 +238,23 @@ class RegistroController extends Controller
         }
     }
 
-    function calcularDineroTotal($registros, $abonos): float
+    function calcularDineroTotal(): float
     {
-        $sumaCreditos = $abonos->sum('valor');
+        $registrosTodos = Registro::with('abonos')->get();
 
-        //Filtra los registros que tienen un estado igual a 1 y suma sus valores totales
-        $sumaContados = $registros->where('id_estado', 1)->sum('valor_total');
+        //Sumar todos los abonos de los registros con crédito
+        $sumaCreditos = $registrosTodos->where('id_estado', 2)
+            /**
+             * flatMap: Devuelve Una sola colección con todos los abonos de todos los registros
+             * sin importar cuántos tenga cada uno y podemos operar
+             * ESTO ES INCREIBLE
+             */
+            ->flatMap->abonos
+            ->sum('valor');
+
+        //Sumar los valores totales de los registros al contado
+        $sumaContados = $registrosTodos->where('id_estado', 1)
+            ->sum('valor_total');
 
         return $sumaCreditos + $sumaContados;
     }
