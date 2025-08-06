@@ -1,0 +1,95 @@
+* { box-sizing: border-box; }
+
+body {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #333 url('https://www.transparenttextures.com/patterns/classy-fabric.png');
+    color: white;
+    font-size: 12px;
+}
+
+form {
+    background: #111;
+    width: 300px;
+    margin: 30px auto;
+    border-radius: 0.4em;
+    border: 1px solid #191919;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 5px 10px 5px rgba(0, 0, 0, 0.2);
+}
+
+form h1 {
+    font-size: 18px;
+    text-shadow: 0 1px 0 black;
+    text-align: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 1);
+    position: relative;
+}
+
+.inset {
+    padding: 20px;
+    border-top: 1px solid #19191a;
+}
+
+label {
+    color: #aaa;
+    display: block;
+    padding-bottom: 9px;
+}
+
+input[type=email],
+input[type=password] {
+    width: 100%;
+    padding: 8px 5px;
+    background: linear-gradient(#1f2124, #27292c);
+    border: 1px solid #222;
+    border-radius: 0.3em;
+    margin-bottom: 20px;
+    color: white;
+}
+
+input[type=checkbox] {
+    display: inline-block;
+    vertical-align: top;
+}
+
+label[for=remember] {
+    color: white;
+    display: inline-block;
+    padding-top: 5px;
+}
+
+.p-container {
+    padding: 0 20px 20px;
+}
+
+.p-container span {
+    float: left;
+    color: #0d93ff;
+    padding-top: 8px;
+}
+
+input[type=submit] {
+    padding: 5px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+    border-radius: 0.3em;
+    background: #50D900;
+    color: white;
+    float: right;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+input[type=submit]:hover {
+    background: #00a4ff;
+}
+
+.alert {
+    color: #ff4d4d;
+    padding: 10px;
+    font-size: 13px;
+    text-align: center;
+}

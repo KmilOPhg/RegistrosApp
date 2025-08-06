@@ -8,6 +8,7 @@ body {
     flex-direction: column;
 }
 
+/* Olas para la parte superior e inferior de la pagina */
 .page-wrapper {
     flex: 1; /* hace que ocupe todo el alto restante */
 }
@@ -16,7 +17,6 @@ body {
     position: relative;
     overflow: hidden;
     color: white;
-    /* No background-color negro, será la ola negra la que lo represente */
     min-height: 250px; /* altura base para que se vea la ola */
 }
 
