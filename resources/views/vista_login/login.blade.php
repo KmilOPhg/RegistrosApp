@@ -4,14 +4,24 @@
     <meta charset="UTF-8">
     <title>Iniciar sesión</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    @vite(['resources/css/login.css'])
-    <!-- FontAwesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Vincula el archivo CSS local -->
+    @vite(['resources/js/app.js', 'resources/css/login.css'])
+
+    <!-- Fuente 'Audiowide' para el título -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<form method="POST" action="{{ route('login') }}">
-    <h1>Iniciar sesión</h1>
+<!-- Contenedor del fondo animado -->
+<div class="background-wrap">
+    <div class="background"></div>
+</div>
+
+<form id="accesspanel" method="POST" action="{{ route('login') }}">
+    <h1 id="litheader">Iniciar sesión</h1>
     <div class="inset">
         @csrf
 
@@ -39,7 +49,7 @@
         </p>
     </div>
     <p class="p-container">
-        <input type="submit" value="Ingresar">
+        <input type="submit" value="Ingresar" id="go">
     </p>
 </form>
 
