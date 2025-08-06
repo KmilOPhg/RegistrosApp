@@ -22,19 +22,29 @@ class RegistroController extends Controller
      */
     public function mostrarRegistros(Request $request) {
         try {
-            $registros = Registro::with('estado', 'abonos')->paginate(9);
-            $abonos = Abono::with('registro')->get();
+            //Agarramos el celular del cliente
+            $celular = $request->get('celular');
 
+            //Aplicamos un filtro con when, tomamos el celular y lo ponemos en funcion
+            $registros = Registro::when($celular, function ($query) use ($celular) {
+                //Retornamos la consulta SQL
+                return $query->where('celular', 'like', "%$celular%");
+            })->with('estado', 'abonos')->paginate(7);
+
+            $abonos = Abono::with('registro')->get();
             $dineroTotal = $this->calcularDineroTotal($registros, $abonos);
 
+            //Miramos si la respuesta es AJAX
             if ($request->ajax()) {
                 $view = view('vista_registro.tabla_registros', compact('registros', 'abonos', 'dineroTotal'))->render();
 
+                //Si es AJAX retornamos el html
                 return response()->json([
                     'html' => $view
                 ]);
             }
 
+            //Si no es AJAX entonces retornamos la vista normal
             return view('vista_registro.main', compact('registros', 'abonos', 'dineroTotal'));
         } catch (\Exception $e) {
             Log::info('Error en la vista' . $e->getMessage());
@@ -46,7 +56,7 @@ class RegistroController extends Controller
      * Logica para crear un registro
      *
      * @param Request $request
-     * @return RedirectResponse
+     * @return JsonResponse|RedirectResponse
      */
     public function registrar(Request $request)
     {
@@ -101,11 +111,22 @@ class RegistroController extends Controller
 
             DB::commit();
 
-            return redirect()->route('registros')->with('success','Registro creado correctamente');
+            return response()->json([
+                'code' => 200,
+                'msg' => 'success',
+                'registro' => $crearRegistro,
+            ]);
+            //return redirect()->route('registros')->with('success','Registro creado correctamente');
         } catch (\Exception $e) {
             DB::rollback();
             Log::info('Error en el registro' . $e->getMessage());
-            return back()->withErrors(['error' => 'Error en el registro']);
+
+            return response()->json([
+                'code' => 500,
+                'msg' => 'error',
+                'error' => $e->getMessage(),
+            ]);
+            //return back()->withErrors(['error' => 'Error en el registro']);
         }
     }
 

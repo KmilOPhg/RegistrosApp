@@ -54,10 +54,15 @@
     @endif
 
     <div class="container page-wrapper">
+        <div class="mb-4">
+            <label class="form-label" id="labelFiltro">Filtro</label>
+            <input type="number" name="filtro" id="filtro" class="form-control" placeholder="Buscar cliente">
+        </div>
+
         <div class="row">
             <!-- FORMULARIO -->
-            <div class="col-md-12 mb-4">
-                <form method="POST" action="{{ route('agregar') }}" class="card p-3 shadow-sm">
+            <div class="col-md mb-4">
+                <form id="formAgregarCliente" method="POST" action="{{ route('agregar') }}" class="card p-3 shadow-sm">
                     @csrf
 
                     <div class="mb-3">
@@ -98,11 +103,11 @@
                         <input type="number" name="abono" id="campoAbono" class="form-control" placeholder="Abono inicial">
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">Añadir</button>
+                    <button id="btnAgregar" type="submit" class="btn btn-primary w-100">Añadir</button>
                 </form>
             </div>
 
-            <div id="contenedor_tabla" class="col-md">
+            <div id="contenedor_tabla" class="col-md-9">
                 @include('vista_registro.tabla_registros', ['registros' => $registros])
             </div>
         </div>

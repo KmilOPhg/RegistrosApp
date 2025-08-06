@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let formaPago = document.getElementById('formaPago');
     let campoAbono = document.getElementById('campoAbono');
     let labelAbono = document.getElementById('labelAbono');
+    let btnAgregar = document.getElementById('btnAgregar');
+    let filtroCelular = '';
     let ultimaPagina = null;
     actualizarAbono();
 
@@ -159,12 +161,19 @@ document.addEventListener("DOMContentLoaded", function () {
      * @returns {Promise<void>}
      */
     async function pasarPagina(url) {
+        //Agarramos la URL que le pasamos por parametro
         ultimaPagina = url;
+        //Si contiene ? o si no, para aplicar el filtro bien en la URL
+        if(url.includes("?")) {
+            ultimaPagina += `&celular=${filtroCelular}`;
+        } else {
+            ultimaPagina = url + `?celular=${filtroCelular}`;
+        }
 
         //Enviar AJAX
         try {
             //Usamos fetch con GET para que laravel reconozca que es AJAX
-            const response = await fetch(url, {
+            const response = await fetch(ultimaPagina, {
                 method: "GET",
                 headers: { "X-Requested-With": "XMLHttpRequest" },
             });
@@ -194,6 +203,88 @@ document.addEventListener("DOMContentLoaded", function () {
             //No me molestes, ya sé que no estoy haciendo nada con esta promesa
             // noinspection JSIgnoredPromiseFromCall
             pasarPagina(url);
+        }
+    });
+
+    /**
+     * Listener para manejar el filtro junto a la paginacion
+     */
+    document.addEventListener('input', function (e) {
+        e.preventDefault();
+        //Si es el campo de filtro entonces aplica el filtro
+        const esFiltro = e.target.id === 'filtro';
+        if (esFiltro) {
+            //Guardamos el valor ingresado en ese campo en la variable global
+            filtroCelular = e.target.value;
+            //No me molestes, ya sé que no estoy haciendo nada con esta promesa
+            //Pasamos la URL directa a la funcion pasar pagina
+            // noinspection JSIgnoredPromiseFromCall
+            pasarPagina('/registros');
+        }
+    });
+
+    /**
+     * Listener para el loading del boton
+     */
+    document.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        //Agarramos el id del formulario
+        if(e.target.id === 'formAgregarCliente') {
+            //Clase css para el spinner
+            btnAgregar.classList.add('loading');
+            btnAgregar.disabled = true;
+
+            try {
+                //Agregamos una variable formData que almacena los datos del formulario
+                const formData = new FormData(e.target)
+
+                //Una variable solo para targetear el formulario
+                const formTarget = e.target;
+
+                //Guardamos en otra variable formulario lo que obtuvimos de formData
+                const formulario = Object.fromEntries(formData.entries());
+
+                //Enviamos por fecth a la ruta que hace la funcion de agregar en laravel
+                const response = await fetch('/agregar', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    //Como el metodo es POST tenemos que pasarle un JSON y ese JSON debe tener los datos del formulario
+                    body: JSON.stringify(formulario)
+                });
+
+                const data = await response.json();
+
+                if(data.code === 200) {
+                    //Entonces vamos a la vista dejando solo la ultima pagina
+                    if(ultimaPagina) {
+                        await pasarPagina(ultimaPagina);
+                    }
+                    btnAgregar.classList.remove('loading');
+                    btnAgregar.disabled = false;
+                    formTarget.reset();
+                } else {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al agregar cliente else'
+                    });
+                    btnAgregar.classList.remove('loading');
+                    btnAgregar.disabled = false;
+
+                }
+            } catch (error) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al agregar cliente catch'
+                });
+                btnAgregar.classList.remove('loading');
+                btnAgregar.disabled = false;
+            }
         }
     });
 });
