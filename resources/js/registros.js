@@ -282,6 +282,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 const data = await response.json();
 
                 if(data.code === 200) {
+                    swal.fire({
+                        icon: "success",
+                        title: "Agregado correctamente",
+                        text: "Cliente agregado correctamente",
+                    })
                     //Entonces vamos a la vista dejando solo la ultima pagina
                     if(ultimaPagina) {
                         await pasarPagina(ultimaPagina);
