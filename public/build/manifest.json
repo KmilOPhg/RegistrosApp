@@ -1,0 +1,24 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-DvAwE_LS.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/css/login.css": {
+    "file": "assets/login-KRvlIVmb.css",
+    "src": "resources/css/login.css",
+    "isEntry": true,
+    "names": [
+      "login.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-YTMZpskW.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}

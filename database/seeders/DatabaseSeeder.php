@@ -50,6 +50,6 @@ class DatabaseSeeder extends Seeder
         /**
          * COMENTAR ESTO LUEGO DE HACER LAS PRUEBAS
          */
-        Registro::factory(14)->create();
+        //Registro::factory(14)->create();
     }
 }
