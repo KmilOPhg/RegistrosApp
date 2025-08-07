@@ -24,14 +24,6 @@
     <h1 id="litheader">Iniciar sesión</h1>
     <div class="inset">
         @csrf
-
-        @if($errors->any())
-            <div class="alert">
-                @foreach($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
         @if($errors->any())
             <script>
                 $(function () {
