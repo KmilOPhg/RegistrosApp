@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AbonoInvalidoException;
+use App\Http\Requests\RegistrarRequest;
 use App\Models\Abono;
 use App\Models\Registro;
+use App\Services\RegistroServices;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
@@ -81,78 +84,36 @@ class RegistroController extends Controller
     /**
      * Logica para crear un registro
      *
-     * @param Request $request
-     * @return JsonResponse|RedirectResponse
+     * @param RegistrarRequest $request
+     * @param RegistroServices $registroServices
+     * @return JsonResponse
      */
-    public function registrar(Request $request)
+    public function registrar(RegistrarRequest $request, RegistroServices $registroServices): JsonResponse
     {
-        //Validamos los datos del formulario, se tiene que poner los campos del formulario
-        $validarRegistro = $request->validate([
-            'cliente' => 'required|string|max:255',
-            'celular' => 'required|numeric|min:0',
-            'producto' => 'required|string|max:255',
-            'precio' => 'required|numeric|min:0',
-            'formaPago' => 'required|integer|in:1,2', //1: Contado, 2: Credito
-            'abono' => 'nullable|numeric|min:0',
-            'cantidad' => 'required|numeric|min:1',
-        ]);
-
-        //Si el abono es nulo lo ponemos como cero
-        $abono = $validarRegistro['abono'] ?? 0;
-
-        /**
-         * Guardamos cantidad y precio para operar
-         */
-        $cantidad = $validarRegistro['cantidad'];
-        $precio = $validarRegistro['precio'];
-
-        //Calculamos el precio total con cantidad y valor
-        $precioTotal = $cantidad * $precio;
-
-        if ($abono > $precioTotal) {
-            return back()->withErrors(['abono' => 'No puedes abonar mas del total'])->withInput();
-        }
-
-        DB::beginTransaction();
-
         try {
-            //Creamos el registro aqui ponemos los campos que van en la base de datos
-            $crearRegistro = Registro::create([
-                'nombre' => $validarRegistro['cliente'],
-                'celular' => $validarRegistro['celular'],
-                'descripcion' => $validarRegistro['producto'],
-                'valor_unitario' => $validarRegistro['precio'],
-                'valor_total' => $precioTotal,
-                'cantidad' => $validarRegistro['cantidad'],
-                'id_estado' => $validarRegistro['formaPago'],
-            ]);
-
-            //Creamos el abono en la tabla abonos con el id del registro creado
-            if ($abono >= 0 || $crearRegistro['formaPago'] == 2) {
-                //Usamos la relacion para crear el abono, asignando automaticamente el id_Registro
-                $crearRegistro->abonos()->create([
-                    'valor' => $abono ?? 0,
-                ]);
-            }
-
-            DB::commit();
+            $registro = $registroServices->crearRegistro($request->validated());
 
             return response()->json([
                 'code' => 200,
                 'msg' => 'success',
-                'registro' => $crearRegistro,
+                'registro' => $registro,
             ]);
-            //return redirect()->route('registros')->with('success','Registro creado correctamente');
-        } catch (\Exception $e) {
-            DB::rollback();
-            Log::info('Error en el registro' . $e->getMessage());
+        } catch (AbonoInvalidoException $exception){
+            Log::error('No se puede abonar mas del total' . $exception->getMessage());
+
+            return response()->json([
+                'code' => 422,
+                'msg' => 'error',
+                'error' => $exception->getMessage(),
+            ]);
+        } catch (\Exception $exception) {
+            Log::error('Error en el registro' . $exception->getMessage());
 
             return response()->json([
                 'code' => 500,
                 'msg' => 'error',
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
-            //return back()->withErrors(['error' => 'Error en el registro']);
         }
     }
 

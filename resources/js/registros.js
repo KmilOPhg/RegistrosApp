@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let labelAbono = document.getElementById('labelAbono');
     let btnAgregar = document.getElementById('btnAgregar');
     let filtroCelular = '';
-    let ultimaPagina = null;
+    let ultimaPagina = '/registros';
     actualizarAbono();
 
     /**
@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const data = await response.json();
 
                 if(data.code === 200) {
-                    swal.fire({
+                    await swal.fire({
                         icon: "success",
                         title: "Agregado correctamente",
                         text: "Cliente agregado correctamente",
