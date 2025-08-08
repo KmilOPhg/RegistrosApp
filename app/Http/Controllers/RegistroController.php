@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\AbonoInvalidoException;
+use App\Exceptions\AbonoNoEncontradoException;
 use App\Http\Requests\RegistrarRequest;
 use App\Models\Abono;
 use App\Models\Registro;
@@ -29,7 +30,7 @@ class RegistroController extends Controller
      *
      * @return Factory|View|Application|RedirectResponse|object
      */
-    public function mostrarRegistros(Request $request) {
+    public function mostrarRegistros(Request $request, RegistroServices $registroServices) {
         try {
             //Agarramos el celular del cliente
             $celular = $request->get('celular');
@@ -66,7 +67,7 @@ class RegistroController extends Controller
             })->with('estado', 'abonos')->paginate(7);
 
             $abonos = Abono::with('registro')->get();
-            $dineroTotal = $this->calcularDineroTotal();
+            $dineroTotal = $this->calcularDineroTotal($registroServices);
 
             //Miramos si la respuesta es AJAX
             if ($request->ajax()) {
@@ -101,7 +102,7 @@ class RegistroController extends Controller
              * Usamos el service que creamos para la logica del registro pasándole
              * la validación al método
              */
-            $registro = $registroServices->crearRegistro($request->validated());
+            $registro = $registroServices->crearRegistroService($request->validated());
 
             //Creamos una clase ResponseJson en traits para manejar las respuestas JSON mas facil
             return $this->successResponse('Registro creado correctamente', $registro->toArray());
@@ -116,67 +117,39 @@ class RegistroController extends Controller
     }
 
     /**
-     * Encargado de editar los registros con peticion ajax
+     * Encargado de editar los registros con petición ajax
      *
      * @param Request $request
+     * @param RegistroServices $registroServices
      * @return JsonResponse
      */
-    public function editarRegistros(Request $request): JsonResponse
+    public function editarRegistros(Request $request, RegistroServices $registroServices): JsonResponse
     {
         //Validamos si la respuesta es AJAX
         if ($request->ajax()) {
-            DB::beginTransaction();
-
-
             try {
-                //Obtenemos los registros y los abonos por ID con el request
-                $registro = Registro::find($request->id_registro);
-                $abono = Abono::find($request->id_abono);
+                //Almacenamos en una variable resultado el retorno de editarRegistro para acceder a sus variables
+                $resultado = $registroServices->editarRegistroService($request);
+                $registro = $resultado['registro'];
+                $abono = $resultado['abono'];
 
-                //Si no encuentra el abono
-                if (!$abono) {
-                    DB::rollBack();
-                    return response()->json([
-                        'code' => 404,
-                        'msg' => 'error',
-                        'message' => 'Abono no encontrado'
-                    ]);
-                }
-
-                //Validar que el valor del abono sea válido
-                if ($request->abono <= 0 || $request->abono > $registro->restante) {
-                    DB::rollBack();
-                    return response()->json([
-                        'code' => 422,
-                        'msg' => 'error',
-                        'message' => 'El valor del abono debe ser mayor que 0 y menor o igual al restante',
-                    ]);
-                }
 
                 //Crear un nuevo abono en la tabla abono
                 $this->crearAbono($request);
 
-                DB::commit();
-
                 //Respuesta correcta devolver codigo 200
-                return response()->json([
-                    'code' => 200,
-                    'msg' => 'success',
-                    'message' => 'Encontrado correctamente',
-                    'registro' => $registro,
+                return $this->successResponse('Registro actualizado correctamente', [
+                    'registro' => $registro->toArray(),
                     'abono' => $request->abono,
                     'abono actual' => $abono->valor,
                 ]);
-            } catch (\Exception $e) {
-                DB::rollBack();
+            //Y pues el catch
+            } catch (AbonoNoEncontradoException $exception) {
 
-                //Y pues el catch
-                return response()->json([
-                    'code' => 500,
-                    'msg' => 'error',
-                    'message' => 'Ocurrió un error al procesar la solicitud.',
-                    'error' => $e->getMessage(),
-                ]);
+                return $this->errorResponse('No se encontró el abono', ['Error' => $exception->getMessage()], 422);
+            } catch (\Exception $exception) {
+
+                return $this->errorResponse('Ocurrió un error al procesar la solicitud', ['Error' => $exception->getMessage()], 500);
             }
         } else {
             return $this->errorResponse('No se pudo encontrar el AJAX', ['Error'], 404);
@@ -194,24 +167,8 @@ class RegistroController extends Controller
         }
     }
 
-    function calcularDineroTotal(): float
+    function calcularDineroTotal(RegistroServices $registroServices): float
     {
-        $registrosTodos = Registro::with('abonos')->get();
-
-        //Sumar todos los abonos de los registros con crédito
-        $sumaCreditos = $registrosTodos->where('id_estado', 2)
-            /**
-             * flatMap: Devuelve Una sola colección con todos los abonos de todos los registros
-             * sin importar cuántos tenga cada uno y podemos operar
-             * ESTO ES INCREIBLE
-             */
-            ->flatMap->abonos
-            ->sum('valor');
-
-        //Sumar los valores totales de los registros al contado
-        $sumaContados = $registrosTodos->where('id_estado', 1)
-            ->sum('valor_total');
-
-        return $sumaCreditos + $sumaContados;
+        return $registroServices->calcularTotalSevice();
     }
 }

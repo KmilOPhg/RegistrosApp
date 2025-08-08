@@ -2,7 +2,11 @@
 
 namespace App\Exceptions;
 
-class AbonoNoEncontradoException
-{
+use Exception;
 
+class AbonoNoEncontradoException extends Exception
+{
+    public function __construct() {
+        parent::__construct("Abono no encontrado");
+    }
 }

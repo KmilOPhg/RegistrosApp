@@ -3,9 +3,14 @@
 namespace App\Services;
 
 use App\Exceptions\AbonoInvalidoException;
+use App\Exceptions\AbonoNoEncontradoException;
 use App\Http\Requests\RegistrarRequest;
+use App\Models\Abono;
 use App\Models\Registro;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use phpDocumentor\Reflection\Types\Integer;
 
 class RegistroServices
 {
@@ -17,7 +22,7 @@ class RegistroServices
      * Servicio encargado de crear el registro donde le pasamos el $request->validated()
      * Y se toman los campos desde ahi
      */
-    public function crearRegistro(array $validarRegistro): Registro {
+    public function crearRegistroService(array $validarRegistro): Registro {
         return DB::transaction(function () use ($validarRegistro) {
 
             //Si el abono es nulo lo ponemos como cero
@@ -56,5 +61,64 @@ class RegistroServices
 
             return $registro;
         });
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     *
+     * IMPORTANTISIMO LOS VALORES DE RETORNO
+     * Si vas a retornar un array pon de retorno:array ya que esto retorna
+     * return ['registro' => $registro,'abono' => $abono];
+     * Que es un array y si no especificas ese retorno todo explota
+     */
+    public function editarRegistroService(Request $request): array {
+        return DB::transaction(function () use ($request) {
+
+            //Obtenemos los registros y los abonos por ID con el request
+            $registro = Registro::find($request->id_registro);
+            $abono = Abono::find($request->id_abono);
+
+            //Si no encuentra el abono lanza una excepcion personalizada
+            if (!$abono) {
+                throw new AbonoNoEncontradoException();
+            }
+
+            //Validar que el valor del abono sea válido
+            if ($request->abono <= 0 || $request->abono > $registro->restante) {
+                throw new AbonoInvalidoException();
+            }
+
+            //Retornamos un arreglo con registro y abono para usarlos en el controlador
+            return [
+                'registro' => $registro,
+                'abono' => $abono,
+            ];
+        });
+    }
+
+    /**
+     * @return void
+     *
+     * Caluclar el total del dinero que se tiene
+     */
+    public function calcularTotalSevice(): float {
+        $registrosTodos = Registro::with('abonos')->get();
+
+        //Sumar todos los abonos de los registros con crédito
+        $sumaCreditos = $registrosTodos->where('id_estado', 2)
+            /**
+             * flatMap: Devuelve Una sola colección con todos los abonos de todos los registros
+             * sin importar cuántos tenga cada uno y podemos operar
+             * ESTO ES INCREIBLE
+             */
+            ->flatMap->abonos
+            ->sum('valor');
+
+        //Sumar los valores totales de los registros al contado
+        $sumaContados = $registrosTodos->where('id_estado', 1)
+            ->sum('valor_total');
+
+        return $sumaCreditos + $sumaContados;
     }
 }

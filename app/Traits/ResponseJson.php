@@ -18,7 +18,7 @@ trait ResponseJson {
         );
     }
 
-    protected function errorResponse(string $message, array $errors = [], int $code = null): JsonResponse {
+    protected function errorResponse(string $message, array $errors = [], int $code = 500): JsonResponse {
         Log::error($message, $errors);
 
         return response()->json(
