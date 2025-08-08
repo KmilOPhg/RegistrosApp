@@ -7,6 +7,7 @@ use App\Http\Requests\RegistrarRequest;
 use App\Models\Abono;
 use App\Models\Registro;
 use App\Services\RegistroServices;
+use App\Traits\ResponseJson;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
@@ -18,6 +19,11 @@ use Illuminate\Support\Facades\Log;
 
 class RegistroController extends Controller
 {
+    /**
+     * Usamos el trait personalizado para manejar los jsons
+     */
+    use ResponseJson;
+
     /**
      * Muestra los registros de la tabla
      *
@@ -91,29 +97,21 @@ class RegistroController extends Controller
     public function registrar(RegistrarRequest $request, RegistroServices $registroServices): JsonResponse
     {
         try {
+            /**
+             * Usamos el service que creamos para la logica del registro pasándole
+             * la validación al método
+             */
             $registro = $registroServices->crearRegistro($request->validated());
 
-            return response()->json([
-                'code' => 200,
-                'msg' => 'success',
-                'registro' => $registro,
-            ]);
+            //Creamos una clase ResponseJson en traits para manejar las respuestas JSON mas facil
+            return $this->successResponse('Registro creado correctamente', $registro->toArray());
+
         } catch (AbonoInvalidoException $exception){
-            Log::error('No se puede abonar mas del total' . $exception->getMessage());
+            return $this->errorResponse('No se puede abonar mas del total', ['Detalle' => $exception->getMessage()], 422);
 
-            return response()->json([
-                'code' => 422,
-                'msg' => 'error',
-                'error' => $exception->getMessage(),
-            ]);
         } catch (\Exception $exception) {
-            Log::error('Error en el registro' . $exception->getMessage());
+            return $this->errorResponse('Error en el servidor', ['Error' => $exception->getMessage()], 500);
 
-            return response()->json([
-                'code' => 500,
-                'msg' => 'error',
-                'error' => $exception->getMessage(),
-            ]);
         }
     }
 
@@ -128,6 +126,7 @@ class RegistroController extends Controller
         //Validamos si la respuesta es AJAX
         if ($request->ajax()) {
             DB::beginTransaction();
+
 
             try {
                 //Obtenemos los registros y los abonos por ID con el request
@@ -180,11 +179,7 @@ class RegistroController extends Controller
                 ]);
             }
         } else {
-            return response()->json([
-                'code' => 404,
-                'msg' => 'error',
-                'message' => 'No se pudo encontrar el AJAX',
-            ]);
+            return $this->errorResponse('No se pudo encontrar el AJAX', ['Error'], 404);
         }
     }
 
