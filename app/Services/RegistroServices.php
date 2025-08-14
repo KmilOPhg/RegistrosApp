@@ -7,13 +7,76 @@ use App\Exceptions\AbonoNoEncontradoException;
 use App\Http\Requests\RegistrarRequest;
 use App\Models\Abono;
 use App\Models\Registro;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 use phpDocumentor\Reflection\Types\Integer;
 
 class RegistroServices
 {
+    /**
+     * Servicio encargado de mostrar la vista
+     *
+     * @param Request $request
+     * @return Factory|\Illuminate\Contracts\View\View|Application|JsonResponse|object
+     */
+    public function mostrarRegistroService(Request $request) {
+        //Agarramos el celular del cliente
+        $celular = $request->get('celular');
+        $deudaCliente = null;
+
+        /**
+         * Este if se encarga de que solo cuando se hayan ingresado
+         * los 10 digitos de un celular haga el cálculo de cuanto deben
+         * con el restante que tienen
+         */
+        if($celular && strlen($celular) === 10) {
+            $clienteEncontrado = Registro::where('celular', $celular)->with('abonos')->get();
+
+            if($clienteEncontrado->isNotEmpty()) {
+                $nombreCliente = $clienteEncontrado->first()->nombre;
+                $deuda = $clienteEncontrado->sum('restante');
+
+                /**
+                 * Guardamos el nombre y la deuda total en este arreglo
+                 * y lo ponemos en el return JSON de esta funcion para luego
+                 * usarlo en el JS ya que lo retornamos como JSON
+                 */
+                $deudaCliente = [
+                    'nombre' => $nombreCliente,
+                    'deuda' => $deuda,
+                ];
+            }
+        }
+
+        //Aplicamos un filtro con when, tomamos el celular y lo ponemos en funcion
+        $registros = Registro::when($celular, function ($query) use ($celular) {
+            //Retornamos la consulta SQL
+            return $query->where('celular', 'like', "%$celular%");
+        })->with('estado', 'abonos')->paginate(7);
+
+        $abonos = Abono::with('registro')->get();
+        $dineroTotal = $this->calcularTotalSevice();
+
+        //Miramos si la respuesta es AJAX
+        if ($request->ajax()) {
+            $view = view('vista_registro.tabla_registros', compact('registros', 'abonos', 'dineroTotal'))->render();
+
+            //Si es AJAX retornamos el html
+            return response()->json([
+                'html' => $view,
+                'deudaCliente' => $deudaCliente,
+            ]);
+        }
+
+        //Si no es AJAX entonces retornamos la vista normal
+        return view('vista_registro.main', compact('registros', 'abonos', 'dineroTotal'));
+    }
+
     /**
      * @param array $validarRegistro
      * @return Registro

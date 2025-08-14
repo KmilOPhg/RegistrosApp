@@ -28,62 +28,14 @@ class RegistroController extends Controller
     /**
      * Muestra los registros de la tabla
      *
-     * @return Factory|View|Application|RedirectResponse|object
+     * @return object|RedirectResponse
      */
     public function mostrarRegistros(Request $request, RegistroServices $registroServices) {
         try {
-            //Agarramos el celular del cliente
-            $celular = $request->get('celular');
-            $deudaCliente = null;
-
-            /**
-             * Este if se encarga de que solo cuando se hayan ingresado
-             * los 10 digitos de un celular haga el cálculo de cuanto deben
-             * con el restante que tienen
-             */
-            if($celular && strlen($celular) === 10) {
-                $clienteEncontrado = Registro::where('celular', $celular)->with('abonos')->get();
-
-                if($clienteEncontrado->isNotEmpty()) {
-                    $nombreCliente = $clienteEncontrado->first()->nombre;
-                    $deuda = $clienteEncontrado->sum('restante');
-
-                    /**
-                     * Guardamos el nombre y la deuda total en este arreglo
-                     * y lo ponemos en el return JSON de esta funcion para luego
-                     * usarlo en el JS ya que lo retornamos como JSON
-                     */
-                    $deudaCliente = [
-                        'nombre' => $nombreCliente,
-                        'deuda' => $deuda,
-                    ];
-                }
-            }
-
-            //Aplicamos un filtro con when, tomamos el celular y lo ponemos en funcion
-            $registros = Registro::when($celular, function ($query) use ($celular) {
-                //Retornamos la consulta SQL
-                return $query->where('celular', 'like', "%$celular%");
-            })->with('estado', 'abonos')->paginate(7);
-
-            $abonos = Abono::with('registro')->get();
-            $dineroTotal = $this->calcularDineroTotal($registroServices);
-
-            //Miramos si la respuesta es AJAX
-            if ($request->ajax()) {
-                $view = view('vista_registro.tabla_registros', compact('registros', 'abonos', 'dineroTotal'))->render();
-
-                //Si es AJAX retornamos el html
-                return response()->json([
-                    'html' => $view,
-                    'deudaCliente' => $deudaCliente,
-                ]);
-            }
-
-            //Si no es AJAX entonces retornamos la vista normal
-            return view('vista_registro.main', compact('registros', 'abonos', 'dineroTotal'));
+            //Retornamos el metodo ya que retorna dos cosas o un JSON o una VISTA
+            return $registroServices->mostrarRegistroService($request);
         } catch (\Exception $e) {
-            Log::info('Error en la vista' . $e->getMessage());
+            Log::info('Error en la vista: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Error en la vista']);
         }
     }
@@ -133,7 +85,6 @@ class RegistroController extends Controller
                 $registro = $resultado['registro'];
                 $abono = $resultado['abono'];
 
-
                 //Crear un nuevo abono en la tabla abono
                 $this->crearAbono($request);
 
@@ -165,10 +116,5 @@ class RegistroController extends Controller
         } catch (\Exception $e) {
             Log::info('Error al crear abono' . $e->getMessage());
         }
-    }
-
-    function calcularDineroTotal(RegistroServices $registroServices): float
-    {
-        return $registroServices->calcularTotalSevice();
     }
 }
