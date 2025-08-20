@@ -2,6 +2,7 @@
 
 use App\Exceptions\AbonoMayorAlTotalException;
 use App\Exceptions\AbonoNegativoException;
+use App\Helpers\JsonResponseHelper;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,17 +23,17 @@ return Application::configure(basePath: dirname(__DIR__))
          * 1. Abono mayor
          * 2. Abono negativo
          */
-        $exceptions->renderable(function (AbonoMayorAlTotalException $e) : JsonResponse {
-            return response()->json([
-                'message' => 'No se puede abonar mas del total',
-                'errors' => ['Detalle' => $e->getMessage()],
-            ], 422);
+        $exceptions->renderable(function (AbonoMayorAlTotalException $e) {
+            return JsonResponseHelper::errorResponse(
+                'No se puede abonar mas del total',
+                ['Detalle' => $e->getMessage()],
+                422);
         });
 
-        $exceptions->renderable(function (AbonoNegativoException $e) : JsonResponse {
-            return response()->json([
-                'message' => 'No se puede abonar un valor negativo',
-                'errors' => ['Detalle' => $e->getMessage()],
-            ], 422);
+        $exceptions->renderable(function (AbonoNegativoException $e) {
+            return JsonResponseHelper::errorResponse(
+                'No se puede abonar un valor negativo',
+                ['Detalle' => $e->getMessage()],
+                422);
         });
     })->create();

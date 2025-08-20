@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const data = await response.json();
 
-                if(response.ok) {
+                if(data.code === 200) {
                     await swal.fire({
                         icon: "success",
                         title: "Agregado correctamente",
@@ -294,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     btnAgregar.classList.remove('loading');
                     btnAgregar.disabled = false;
                     formTarget.reset();
-                } else if (response.status === 422) {
+                } else if (data.code === 422) {
                     await Swal.fire({
                         icon: 'error',
                         title: 'Error',
