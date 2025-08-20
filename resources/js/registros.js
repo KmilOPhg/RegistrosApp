@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const data = await response.json();
 
-                if(data.code === 200) {
+                if(response.ok) {
                     await swal.fire({
                         icon: "success",
                         title: "Agregado correctamente",
@@ -294,11 +294,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     btnAgregar.classList.remove('loading');
                     btnAgregar.disabled = false;
                     formTarget.reset();
-                } else {
+                } else if (response.status === 422) {
                     await Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Error al agregar cliente else'
+                        text: data.errors.Detalle
                     });
                     btnAgregar.classList.remove('loading');
                     btnAgregar.disabled = false;

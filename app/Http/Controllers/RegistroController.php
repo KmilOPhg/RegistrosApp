@@ -2,20 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\AbonoInvalidoException;
+use App\Exceptions\AbonoMayorAlTotalException;
+use App\Exceptions\AbonoNegativoException;
 use App\Exceptions\AbonoNoEncontradoException;
 use App\Http\Requests\RegistrarRequest;
 use App\Models\Abono;
-use App\Models\Registro;
 use App\Services\RegistroServices;
 use App\Traits\ResponseJson;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class RegistroController extends Controller
@@ -46,26 +42,19 @@ class RegistroController extends Controller
      * @param RegistrarRequest $request
      * @param RegistroServices $registroServices
      * @return JsonResponse
+     * @throws AbonoMayorAlTotalException
+     * @throws AbonoNegativoException
      */
     public function registrar(RegistrarRequest $request, RegistroServices $registroServices): JsonResponse
     {
-        try {
-            /**
-             * Usamos el service que creamos para la logica del registro pasándole
-             * la validación al método
-             */
-            $registro = $registroServices->crearRegistroService($request->validated());
+        /**
+         * Usamos el service que creamos para la logica del registro pasándole
+         * la validación al método
+         */
+        $registro = $registroServices->crearRegistroService($request->validated());
 
-            //Creamos una clase ResponseJson en traits para manejar las respuestas JSON mas facil
-            return $this->successResponse('Registro creado correctamente', $registro->toArray());
-
-        } catch (AbonoInvalidoException $exception){
-            return $this->errorResponse('No se puede abonar mas del total', ['Detalle' => $exception->getMessage()], 422);
-
-        } catch (\Exception $exception) {
-            return $this->errorResponse('Error en el servidor', ['Error' => $exception->getMessage()], 500);
-
-        }
+        //Creamos una clase ResponseJson en traits para manejar las respuestas JSON mas facil
+        return $this->createdResponse('Registro creado correctamente', $registro->toArray());
     }
 
     /**
@@ -107,7 +96,8 @@ class RegistroController extends Controller
         }
     }
 
-    public function crearAbono(Request $request){
+    public function crearAbono(Request $request)
+    {
         try {
             Abono::create([
                 'id_registro' => $request->id_registro,

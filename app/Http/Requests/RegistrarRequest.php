@@ -28,7 +28,7 @@ class RegistrarRequest extends FormRequest
             'producto' => 'required|string|max:255',
             'precio' => 'required|numeric|min:0',
             'formaPago' => 'required|integer|in:1,2', //1: Contado, 2: Credito
-            'abono' => 'nullable|numeric|min:0',
+            'abono' => 'nullable|numeric',
             'cantidad' => 'required|numeric|min:1',
         ];
     }

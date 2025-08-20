@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
-use App\Exceptions\AbonoInvalidoException;
+use AllowDynamicProperties;
+use App\Exceptions\AbonoMayorAlTotalException;
+use App\Exceptions\AbonoNegativoException;
 use App\Exceptions\AbonoNoEncontradoException;
 use App\Http\Requests\RegistrarRequest;
 use App\Models\Abono;
 use App\Models\Registro;
+use App\Repositories\RegistroRepository;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +21,19 @@ use phpDocumentor\Reflection\Types\Integer;
 
 class RegistroServices
 {
+    /**
+     * @var RegistroRepository
+     */
+    protected RegistroRepository $registroRepository;
+
+    /**
+     * @param RegistroRepository $registroRepository
+     */
+    public function __construct(RegistroRepository $registroRepository)
+    {
+        $this->registroRepository = $registroRepository;
+    }
+
     /**
      * Servicio encargado de mostrar la vista
      *
@@ -80,16 +96,16 @@ class RegistroServices
     /**
      * @param array $validarRegistro
      * @return Registro
-     * @throws AbonoInvalidoException
+     * @throws AbonoMayorAlTotalException
+     * @throws AbonoNegativoException
      *
      * Servicio encargado de crear el registro donde le pasamos el $request->validated()
      * Y se toman los campos desde ahi
      */
     public function crearRegistroService(array $validarRegistro): Registro {
         return DB::transaction(function () use ($validarRegistro) {
-
             //Si el abono es nulo lo ponemos como cero
-            $abono = $validarRegistro['abono'] ?? 0;
+            $abono = (float) ($validarRegistro['abono'] ?? 0);
 
             /**
              * Guardamos cantidad y precio para operar
@@ -101,26 +117,14 @@ class RegistroServices
             $precioTotal = $cantidad * $precio;
 
             //Como es un servicio lanzamos una excepcion para que lo tome el catch del controlador
-            if ($abono > $precioTotal) throw new AbonoInvalidoException($precioTotal);
+            if ($abono > $precioTotal) throw new AbonoMayorAlTotalException($precioTotal);
+            if ($abono < 0) throw new AbonoNegativoException();
 
             //Creamos el registro aqui ponemos los campos que van en la base de datos
-            $registro = Registro::create([
-                'nombre' => $validarRegistro['cliente'],
-                'celular' => $validarRegistro['celular'],
-                'descripcion' => $validarRegistro['producto'],
-                'valor_unitario' => $validarRegistro['precio'],
-                'valor_total' => $precioTotal,
-                'cantidad' => $validarRegistro['cantidad'],
-                'id_estado' => $validarRegistro['formaPago'],
-            ]);
+            $registro = $this->registroRepository->crearRegistroRepo($validarRegistro, $precioTotal);
 
             //Creamos el abono en la tabla abonos con el id del registro creado
-            if ($abono >= 0 || $registro['formaPago'] == 2) {
-                //Usamos la relacion para crear el abono, asignando automaticamente el id_Registro
-                $registro->abonos()->create([
-                    'valor' => $abono ?? 0,
-                ]);
-            }
+            $this->registroRepository->crearAbonoRepo($registro, $abono);
 
             return $registro;
         });
@@ -149,7 +153,7 @@ class RegistroServices
 
             //Validar que el valor del abono sea válido
             if ($request->abono <= 0 || $request->abono > $registro->restante) {
-                throw new AbonoInvalidoException();
+                throw new AbonoMayorAlTotalException();
             }
 
             //Retornamos un arreglo con registro y abono para usarlos en el controlador
