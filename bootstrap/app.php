@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
          * 1. Abono mayor
          * 2. Abono negativo
          * 3. Abono no encontrado
+         * 4. Excepcion general
          */
         $exceptions->renderable(function (AbonoMayorAlTotalException $e) {
             return JsonResponseHelper::errorResponse(
