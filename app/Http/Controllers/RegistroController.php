@@ -68,29 +68,20 @@ class RegistroController extends Controller
     {
         //Validamos si la respuesta es AJAX
         if ($request->ajax()) {
-            try {
-                //Almacenamos en una variable resultado el retorno de editarRegistro para acceder a sus variables
-                $resultado = $registroServices->editarRegistroService($request);
-                $registro = $resultado['registro'];
-                $abono = $resultado['abono'];
+            //Almacenamos en una variable resultado el retorno de editarRegistro para acceder a sus variables
+            $resultado = $registroServices->editarRegistroService($request);
+            $registro = $resultado['registro'];
+            $abono = $resultado['abono'];
 
-                //Crear un nuevo abono en la tabla abono
-                $this->crearAbono($request);
+            //Crear un nuevo abono en la tabla abono
+            $this->crearAbono($request);
 
-                //Respuesta correcta devolver codigo 200
-                return $this->successResponse('Registro actualizado correctamente', [
-                    'registro' => $registro->toArray(),
-                    'abono' => $request->abono,
-                    'abono actual' => $abono->valor,
-                ]);
-            //Y pues el catch
-            } catch (AbonoNoEncontradoException $exception) {
-
-                return $this->errorResponse('No se encontró el abono', ['Error' => $exception->getMessage()], 422);
-            } catch (\Exception $exception) {
-
-                return $this->errorResponse('Ocurrió un error al procesar la solicitud', ['Error' => $exception->getMessage()], 500);
-            }
+            //Respuesta correcta devolver codigo 200
+            return $this->successResponse('Registro actualizado correctamente', [
+                'registro' => $registro->toArray(),
+                'abono' => $request->abono,
+                'abono actual' => $abono->valor,
+            ]);
         } else {
             return $this->errorResponse('No se pudo encontrar el AJAX', ['Error'], 404);
         }

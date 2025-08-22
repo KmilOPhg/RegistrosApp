@@ -2,22 +2,13 @@
 
 namespace App\Services;
 
-use AllowDynamicProperties;
 use App\Exceptions\AbonoMayorAlTotalException;
 use App\Exceptions\AbonoNegativoException;
 use App\Exceptions\AbonoNoEncontradoException;
-use App\Http\Requests\RegistrarRequest;
-use App\Models\Abono;
 use App\Models\Registro;
 use App\Repositories\RegistroRepository;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Foundation\Application;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\View\View;
-use phpDocumentor\Reflection\Types\Integer;
 
 class RegistroServices
 {
@@ -38,20 +29,62 @@ class RegistroServices
      * Servicio encargado de mostrar la vista
      *
      * @param Request $request
-     * @return Factory|\Illuminate\Contracts\View\View|Application|JsonResponse|object
+     * @return string
      */
     public function mostrarRegistroService(Request $request) {
         //Agarramos el celular del cliente
         $celular = $request->get('celular');
-        $deudaCliente = null;
 
+        //Variable para guardar la deuda del cliente
+        $deudaCliente = $this->calcularDeudaCliente($celular);
+
+        //Aplicamos un filtro con when, tomamos el celular y lo ponemos en funcion
+        $registros = $this->registroRepository->obtenerRegistrosConFiltro($celular, 7);
+
+        //Obtenemos los abonos de la base de datos
+        $abonos = $this->registroRepository->obtenerAbonos();
+        $dineroTotal = $this->calcularTotalService();
+
+        //Miramos si la respuesta es AJAX
+        if ($request->ajax() || $request->wantsJson()) {
+            //Si es AJAX retornamos el html
+            //$view = view('vista_registro.tabla_registros', compact('registros', 'abonos', 'dineroTotal'));
+
+            return response()->json([
+                'html' => $this->renderTabla($registros, $abonos, $dineroTotal),
+                'deudaCliente' => $deudaCliente,
+            ]);
+        }
+
+        //Si no es AJAX entonces retornamos la vista normal
+        return view('vista_registro.main', compact('registros', 'abonos', 'dineroTotal'));
+    }
+
+    /**
+     * @param $registros
+     * @param $abonos
+     * @param $dineroTotal
+     * @return string
+     */
+    public function renderTabla($registros, $abonos, $dineroTotal): string
+    {
+        return view('vista_registro.tabla_registros', compact('registros', 'abonos', 'dineroTotal'))->render();
+    }
+
+    /**
+     * @param $celular
+     * @return array|void
+     */
+    public function calcularDeudaCliente($celular) : ?array
+    {
         /**
          * Este if se encarga de que solo cuando se hayan ingresado
          * los 10 digitos de un celular haga el cálculo de cuanto deben
          * con el restante que tienen
          */
         if($celular && strlen($celular) === 10) {
-            $clienteEncontrado = Registro::where('celular', $celular)->with('abonos')->get();
+            //Buscamos el cliente por celular
+            $clienteEncontrado = $this->registroRepository->buscarCliente($celular);
 
             if($clienteEncontrado->isNotEmpty()) {
                 $nombreCliente = $clienteEncontrado->first()->nombre;
@@ -60,37 +93,17 @@ class RegistroServices
                 /**
                  * Guardamos el nombre y la deuda total en este arreglo
                  * y lo ponemos en el return JSON de esta funcion para luego
-                 * usarlo en el JS ya que lo retornamos como JSON
+                 * usarlo en el JS, ya que lo retornamos como JSON
                  */
-                $deudaCliente = [
+                return [
                     'nombre' => $nombreCliente,
                     'deuda' => $deuda,
                 ];
             }
         }
 
-        //Aplicamos un filtro con when, tomamos el celular y lo ponemos en funcion
-        $registros = Registro::when($celular, function ($query) use ($celular) {
-            //Retornamos la consulta SQL
-            return $query->where('celular', 'like', "%$celular%");
-        })->with('estado', 'abonos')->paginate(7);
-
-        $abonos = Abono::with('registro')->get();
-        $dineroTotal = $this->calcularTotalSevice();
-
-        //Miramos si la respuesta es AJAX
-        if ($request->ajax()) {
-            $view = view('vista_registro.tabla_registros', compact('registros', 'abonos', 'dineroTotal'))->render();
-
-            //Si es AJAX retornamos el html
-            return response()->json([
-                'html' => $view,
-                'deudaCliente' => $deudaCliente,
-            ]);
-        }
-
-        //Si no es AJAX entonces retornamos la vista normal
-        return view('vista_registro.main', compact('registros', 'abonos', 'dineroTotal'));
+        //Si no encuentra el cliente retornamos null
+        return null;
     }
 
     /**
@@ -142,9 +155,13 @@ class RegistroServices
     public function editarRegistroService(Request $request): array {
         return DB::transaction(function () use ($request) {
 
+            //Guardamos los valores del request en variables
+            $id_registro = $request->id_registro;
+            $id_abono = $request->id_abono;
+
             //Obtenemos los registros y los abonos por ID con el request
-            $registro = Registro::find($request->id_registro);
-            $abono = Abono::find($request->id_abono);
+            $registro = $this->registroRepository->obtenerIdRegistro($id_registro);
+            $abono = $this->registroRepository->obtenerIdAbonos($id_abono);
 
             //Si no encuentra el abono lanza una excepcion personalizada
             if (!$abono) {
@@ -169,8 +186,8 @@ class RegistroServices
      *
      * Caluclar el total del dinero que se tiene
      */
-    public function calcularTotalSevice(): float {
-        $registrosTodos = Registro::with('abonos')->get();
+    public function calcularTotalService(): float {
+        $registrosTodos = $this->registroRepository->obtenerRegistros();
 
         //Sumar todos los abonos de los registros con crédito
         $sumaCreditos = $registrosTodos->where('id_estado', 2)

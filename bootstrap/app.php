@@ -2,6 +2,7 @@
 
 use App\Exceptions\AbonoMayorAlTotalException;
 use App\Exceptions\AbonoNegativoException;
+use App\Exceptions\AbonoNoEncontradoException;
 use App\Helpers\JsonResponseHelper;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
          * Registramos las excepciones
          * 1. Abono mayor
          * 2. Abono negativo
+         * 3. Abono no encontrado
          */
         $exceptions->renderable(function (AbonoMayorAlTotalException $e) {
             return JsonResponseHelper::errorResponse(
@@ -35,5 +37,20 @@ return Application::configure(basePath: dirname(__DIR__))
                 'No se puede abonar un valor negativo',
                 ['Detalle' => $e->getMessage()],
                 422);
+        });
+
+        $exceptions->renderable(function (AbonoNoEncontradoException $e) {
+            return JsonResponseHelper::errorResponse(
+                'No se pudo encontrar el abono',
+                ['Error' => $e->getMessage()],
+                404);
+        });
+
+        //Excepcion general
+        $exceptions->renderable(function (Exception $e) {
+            return JsonResponseHelper::errorResponse(
+                'Error en el servidor',
+                ['Error' => $e->getMessage()],
+            500);
         });
     })->create();
