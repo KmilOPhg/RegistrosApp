@@ -362,7 +362,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const data = await response.json();
 
-                if(data.code === 200) {
+                if(data.code === 201) {
+                    console.log("Cliente agregado correctamente");
                     await swal.fire({
                         icon: "success",
                         title: "Agregado correctamente",
@@ -383,7 +384,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                     btnAgregar.classList.remove('loading');
                     btnAgregar.disabled = false;
-
+                    console.log("Errores de validacion: ", data.errors);
                 }
             } catch (error) {
                 await Swal.fire({
