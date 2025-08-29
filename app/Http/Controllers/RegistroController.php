@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\AbonoMayorAlTotalException;
 use App\Exceptions\AbonoNegativoException;
-use App\Exceptions\AbonoNoEncontradoException;
 use App\Http\Requests\RegistrarRequest;
 use App\Models\Abono;
 use App\Services\RegistroServices;
 use App\Traits\ResponseJson;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -24,7 +22,7 @@ class RegistroController extends Controller
     /**
      * Muestra los registros de la tabla
      *
-     * @return object|RedirectResponse
+     * @return string
      */
     public function mostrarRegistros(Request $request, RegistroServices $registroServices) {
         try {
