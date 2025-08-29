@@ -202,12 +202,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     //Si el codigo es 200 que es eliminado
                     if(data.code === 200) {
-                        await Swal.fire({
+                        /*await Swal.fire({
                             icon: "success",
                             title: "Eliminado",
                             text: "El registro ha sido eliminado.",
                             confirmButtonText: "Listo",
-                        });
+                        });*/
                         //Entonces vamos a la vista dejando solo la ultima pagina
                         if(ultimaPagina) {
                             await pasarPagina(ultimaPagina);
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if(ultimaPagina) {
                         await pasarPagina(ultimaPagina);
                     }
-                    btnAgregar.classList.remove('loading');
+                        btnAgregar.classList.remove('loading');
                     btnAgregar.disabled = false;
                     formTarget.reset();
                 } else if (data.code === 422) {

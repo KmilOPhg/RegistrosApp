@@ -33,23 +33,25 @@
                     <td>{{ $registro->estado->estado }}</td>
                     <td>{{ number_format($totalAbonado) }}</td>
                     <td>{{ number_format($registro->restante) }}</td>
-                    <td class="d-flex justify-content-between gap-1">
-                        @if($registro->restante > 0)
-                            <button
-                                class="btn btn-sm btn-warning btnAbonar"
-                                data-id_registro="{{ $registro->id }}"
-                                data-id_abono="{{ optional($ultimoAbono)->id }}"
-                                data-valor_abono="{{ optional($ultimoAbono)->valor }}">
-                                Abonar
-                            </button>
-                        @else
-                            <span class="badge bg-success">Pagado</span>
-                        @endif
+                    <td class="text-center">
+                        <div class="d-flex justify-content-between gap-2 w-auto mx-auto">
+                            @if($registro->restante > 0)
+                                <button
+                                    class="btn btn-sm btn-warning btnAbonar"
+                                    data-id_registro="{{ $registro->id }}"
+                                    data-id_abono="{{ optional($ultimoAbono)->id }}"
+                                    data-valor_abono="{{ optional($ultimoAbono)->valor }}">
+                                    Abonar
+                                </button>
+                            @else
+                                <span class="badge bg-success">Pagado</span>
+                            @endif
                             <button
                                 class="btn btn-sm btn-danger btnEliminar"
                                 data-id_registro="{{ $registro->id }}">
                                 Eliminar
                             </button>
+                        </div>
                     </td>
                 </tr>
             @endforeach
