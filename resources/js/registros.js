@@ -157,6 +157,87 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /**
+     * Ajax para eliminar un registro
+     */
+    document.querySelector('#contenedor_tabla').addEventListener('click', function(event) {
+        //Buscamos si algún elemeno clicado tiene la clase btnEliminar
+        const btnEliminar = event.target.closest('.btnEliminar');
+        if(btnEliminar) { //Si encuentra el boton
+
+            //Obtenemos los valores del html pasados por el boton y los pasamos por argumentos a la funcion
+            let id_registro = btnEliminar.getAttribute('data-id_registro');
+
+            //No me molestes, ya sé que no estoy haciendo nada con esta promesa
+            // noinspection JSIgnoredPromiseFromCall
+            eliminarRegistro(id_registro);
+        }
+    });
+    async function eliminarRegistro(id_registro) {
+        //Alerta SwalFire
+        const result = await Swal.fire({
+            title: "¿Estás seguro?",
+            text: "Esta acción no se puede deshacer.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    //Espera a que todo esto se ejecute con await
+                    const response = await fetch(`/eliminar/${id_registro}`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ id_registro: id_registro })
+                    });
+
+                    //Espera a que devuelva el json con await
+                    const data = await response.json();
+
+                    //Si el codigo es 200 que es eliminado
+                    if(data.code === 200) {
+                        await Swal.fire({
+                            icon: "success",
+                            title: "Eliminado",
+                            text: "El registro ha sido eliminado.",
+                            confirmButtonText: "Listo",
+                        });
+                        //Entonces vamos a la vista dejando solo la ultima pagina
+                        if(ultimaPagina) {
+                            await pasarPagina(ultimaPagina);
+                        }
+                    } else {
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo eliminar el registro. Inténtalo de nuevo.'
+                        });
+                    }
+                } catch (error) {
+                    console.log('Hubo un error al eliminar el registro: ' , error);
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Hubo un error al eliminar el registro '+ error.message,
+                    });
+                }
+            } else {
+                /*await swal.fire({
+                   icon: "info",
+                   title: "Cancelado",
+                   text: "Cancelaste la eliminación"
+                });*/
+            }
+        });
+    }
+
+    /**
      * Funcion para pasar pagina AJAX
      * @returns {Promise<void>}
      */

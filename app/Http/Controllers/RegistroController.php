@@ -85,6 +85,16 @@ class RegistroController extends Controller
         }
     }
 
+    public function eliminarRegistro($id_registro, RegistroServices $registroServices): JsonResponse
+    {
+        $eliminado = $registroServices->eliminarRegistroService($id_registro);
+        if ($eliminado) {
+            return $this->successResponse('Registro eliminado correctamente', [$id_registro]);
+        } else {
+            return $this->errorResponse('No se pudo eliminar el registro', ['Error']);
+        }
+    }
+
     public function crearAbono(Request $request)
     {
         try {

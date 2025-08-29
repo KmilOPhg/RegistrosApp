@@ -21,3 +21,4 @@ Route::get('/', function () {
 Route::get('/registros', [RegistroController::class, 'mostrarRegistros'])->name('registros')->middleware('auth');
 Route::post('/agregar', [RegistroController::class, 'registrar'])->name('agregar')->middleware('auth');
 Route::post('/editar/{id}', [RegistroController::class, 'editarRegistros'])->name('editar')->middleware('auth');
+Route::post('/eliminar/{id}', [RegistroController::class, 'eliminarRegistro'])->name('eliminar')->middleware('auth');

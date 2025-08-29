@@ -182,7 +182,27 @@ class RegistroServices
     }
 
     /**
-     * @return void
+     * @param $id_registro
+     * @return bool
+     *
+     * Eliminar un registro y sus abonos
+     * Pasamos el id del registro desde fetch por ajax
+     */
+    public function eliminarRegistroService($id_registro) : bool
+    {
+        return DB::transaction(function () use ($id_registro) {
+            //Si no encuentra el registro retorna false
+            $registro = $this->registroRepository->obtenerIdRegistro($id_registro);
+            if (!$registro) {
+                return false;
+            }
+            //Elimina el registro y sus abonos asociados
+            return $this->registroRepository->eliminarRegistro($registro);
+        });
+    }
+
+    /**
+     * @return float
      *
      * Caluclar el total del dinero que se tiene
      */

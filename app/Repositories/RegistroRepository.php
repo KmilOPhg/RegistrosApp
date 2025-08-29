@@ -98,4 +98,16 @@ class RegistroRepository
         //Obtenemos los abonos ID con el request
         return Abono::find($id_abono);
     }
+
+    /**
+     * @param Registro $registro
+     * @return bool
+     *
+     * Elimina un registro y sus abonos asociados
+     */
+    public function eliminarRegistro(Registro $registro) : bool
+    {
+        $registro->abonos()->delete();
+        return $registro->delete();
+    }
 }
